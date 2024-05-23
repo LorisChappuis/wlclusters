@@ -1,0 +1,4 @@
+numpy
+pymc
+astropy
+scipy

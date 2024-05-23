@@ -1,0 +1,9 @@
+Metadata-Version: 2.1
+Name: wlclusters
+Version: 0.1.0
+Summary: A package to extract 1D shear profiles around galaxy cluster and fit them via density profile forward modeling
+Author: Loris Chappuis
+Requires-Dist: numpy
+Requires-Dist: pymc
+Requires-Dist: astropy
+Requires-Dist: scipy
