@@ -2,7 +2,7 @@ import pymc as pm
 import numpy as np
 from astropy.table import Table
 from tqdm import tqdm
-from .modeling import WLData, WLmodel
+from .modeling import WLData, WLmodel, rdelt_to_mdelt
 
 
 def run(cluster_cat, shear_profiles, cosmo):
@@ -46,4 +46,35 @@ def run(cluster_cat, shear_profiles, cosmo):
     all_chains['c200'] = all_c200_chains
     all_chains['r200'] = all_r200_chains
 
-    return all_chains
+
+    # Calculate median, 16th, and 84th percentiles for c200 and r200
+    c200_med = np.median(all_chains['c200'], axis=1)
+    c200_perc_16 = np.percentile(all_chains['c200'], 16, axis=1)
+    c200_perc_84 = np.percentile(all_chains['c200'], 84, axis=1)
+
+    r200_med = np.median(all_chains['r200'], axis=1)
+    r200_perc_16 = np.percentile(all_chains['r200'], 16, axis=1)
+    r200_perc_84 = np.percentile(all_chains['r200'], 84, axis=1)
+
+    # Calculate m200
+    z_p = cluster_cat['z_p']
+
+    m200_med = rdelt_to_mdelt(r200_med, z_p, cosmo)
+    m200_perc_16 = rdelt_to_mdelt(r200_perc_16, z_p, cosmo)
+    m200_perc_84 = rdelt_to_mdelt(r200_perc_84, z_p, cosmo)
+
+    results_table = Table()
+
+    # Add columns to the table
+    results_table['ID'] = cluster_cat['ID']
+    results_table['m200_med'] = m200_med
+    results_table['m200_perc_16'] = m200_perc_16
+    results_table['m200_perc_84'] = m200_perc_84
+    results_table['r200_med'] = r200_med
+    results_table['r200_perc_16'] = r200_perc_16
+    results_table['r200_perc_84'] = r200_perc_84
+    results_table['c200_med'] = c200_med
+    results_table['c200_perc_16'] = c200_perc_16
+    results_table['c200_perc_84'] = c200_perc_84
+
+    return all_chains, results_table

@@ -112,6 +112,28 @@ def return_sigmacrit(sources, center, z_cl, bin_edges, dz, cosmo):
 
 
 def shear_extraction(cluster_cat, sources, bin_edges, dz, cosmo):
+    """
+    Iterates the shear extraction over all clusters of the given catalog
+
+    Args:
+    - cluster_cat (DataFrame): Galaxy cluster catalog DataFrame containing columns for:
+        'RA', 'Dec'(position of the cluster)
+        'ID', (unique ID of the cluster)
+        'z_p' (redshift)
+    - sources (DataFrame): Source catalogue DataFrame containing columns for 'RA', 'Dec', 'e_1', and 'e_2'
+    - bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.
+    - dz (float, optional): Redshift offset for source selection. Defaults to 0.1.
+    - cosmo: cosmology initialized with astropy.cosmology
+
+    Returns:
+    - shear_profiles: an astropy table containing the columns:
+        'ID': (unique ID of the cluster),
+        'rin', 'rout': the edges of each concentric bin in which the extraction was done, in arcmins,
+        'gplus': the mean tangential shear,
+        'errors': incertitude on the mean tangential shear,
+        'msci': value of the inverse mean critical density <sigcrit**-1> in Mpc**2.Msun**-1.
+        'fl': value of <sigcrit**-2> / (<sigcrit**-1>**2), useful for 2nd order approximation of the shear.
+    """
     profiles = []
     for cluster in tqdm(cluster_cat):
         clust_center = [cluster['RA'], cluster['Dec']]

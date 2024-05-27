@@ -3,6 +3,7 @@ wlclusters/__init__.py
 wlclusters/deproject.py
 wlclusters/fitting.py
 wlclusters/modeling.py
+wlclusters/plotting.py
 wlclusters/shear_extraction.py
 wlclusters.egg-info/PKG-INFO
 wlclusters.egg-info/SOURCES.txt

@@ -4,26 +4,58 @@ from .deproject import MyDeprojVol
 import pymc as pm
 
 
-def rho_nfw_cr(radii, c200, r200, delta=200.):
-    # Theano function for the Navarro-Frank-White density profile (Navarro et al. 1996)
-    # Should be multiplied by rho_crit(z)
+def rho_nfw_cr(radii, cdelt, rdelt, delta=200.):
+
+    """
+    Theano function for the Navarro-Frank-White density profile (Navarro et al. 1996).
+
+    Args:
+    - radii: in Mpc.
+    - cdelt: NFW concentration
+    - cdelt: NFW overdensity radius
+    - delta: chosen overdensity, default is 200
+
+    Returns:
+    - NFW density profile / critical density of the Universe (i.e. needs to be multiplied by rho_crit(z))
+    """
+
     r = (radii[1:] + radii[:-1]) / 2 * 1000.
-    delta_crit = (delta / 3) * (c200 ** 3) * (pm.math.log(1. + c200) - c200 / (1 + c200)) ** (-1)
-    return delta_crit / ((c200 * r / r200) * ((1. + (c200 * r / r200)) ** 2))
+    delta_crit = (delta / 3) * (cdelt ** 3) * (pm.math.log(1. + cdelt) - cdelt / (1 + cdelt)) ** (-1)
+    return delta_crit / ((cdelt * r / rdelt) * ((1. + (cdelt * r / rdelt)) ** 2))
 
 
 def rho_to_sigma(radii_bins, rho):
-    # computes the projected mass density sigma given a density profile rho
-    # radii_bins*=1e-6
+
+    """
+   Recovers the projected surface mass density by projecting a density profile
+
+    Args:
+    - radii_bins
+    - rho: density profile
+
+    Returns:
+    - surface mass density in M_sun * Mpc**-2
+    """
+
     deproj = MyDeprojVol(radii_bins[:-1], radii_bins[1:])
     proj_vol = deproj.deproj_vol().T
     area_proj = np.pi * (-(radii_bins[:-1] * 1e6) ** 2 + (radii_bins[1:] * 1e6) ** 2)
     sigma = pm.math.dot(proj_vol, rho) / area_proj
-    return sigma * 1e12  # to get result in M_sun * Mpc**-2
+    return sigma * 1e12
 
 
 def dsigma_trap(sigma, radii):
-    # computes dsigma using numerical trap intergration
+    """
+   computes Delta Sigma using numerical trapezoidal intergration
+
+    Args:
+    - sigma: projected surface mass density
+    - radii
+
+    Returns:
+    - Delta Sigma
+    """
+
     rmean = (radii[1:] + radii[:-1]) / 2
     rmean2 = (rmean[1:] + rmean[:-1]) / 2
     m = np.tril(np.ones((len(rmean2) + 1, len(rmean2) + 1)))
@@ -47,14 +79,41 @@ def dsigma_trap(sigma, radii):
 
 
 def get_shear(sigma, dsigma, mean_sigm_crit_inv, fl):
-    # computes the tangential shear g+ given the mass profile of the cluster (sigma, dsigma) and geometrical
-    # situation of background sources(mean_sigm_crit_inv, fl)
+    """
+   computes the expected tangential shear profile using Seitz and Schneider 1997 (or Umestu 2020 equation 93)
+
+    Args:
+    - sigma: projected surface mass density
+    - dsigma: Delta Sigma
+    - mean_sigm_crit_inv: value of the inverse mean critical density <sigcrit**-1> in Mpc**2.Msun**-1
+    - fl: value of <sigcrit**-2> / (<sigcrit**-1>**2)
+
+    Returns:
+    - mean tangential shear
+    """
+
     shear = (dsigma * mean_sigm_crit_inv) / (1 - fl * sigma * mean_sigm_crit_inv)
+
     return shear
 
 
 def get_radplus(radii, rmin=1e-3, rmax=1e2, nptplus=19):
-    # for the numerical integration to be successful, it is useful to create a set of fictive points at low radii
+    """
+   for the numericat integration to be successful, it is useful to create a set of fictive points at low radii aswell
+   as between each data point
+
+    Args:
+    - radii: input radii of the data points
+    - dsigma: Delta Sigma
+    - mean_sigm_crit_inv: value of the inverse mean critical density <sigcrit**-1> in Mpc**2.Msun**-1
+    - fl: value of <sigcrit**-2> / (<sigcrit**-1>**2)
+
+    Returns:
+    - radplus: new set of extra/inter-polated radii values, including the values of "radii"
+    - rmeanplus: central values of "radplus"
+    - evalrad: indices of the "radii" points within "radplus"
+    """
+
     if nptplus % 2 == 0:
         nptplus = nptplus + 1
     rmean = (radii[1:] + radii[:-1]) / 2.
@@ -70,6 +129,19 @@ def get_radplus(radii, rmin=1e-3, rmax=1e2, nptplus=19):
 
 
 def WLmodel(WLdata, pmod):
+    """
+   Modeling of the mean tangential shear for a given density profile at a given redshift
+
+    Args:
+    - WLdata: class containing all the useful informations about the cluster (radii binning, redshift, msci, fl..)
+    - pmod: list containing the density profile parameters values, in the case NFW, cdelta and rdelta
+
+    Returns:
+    - gplus: predicted mean tangential shear profile
+    - rm: radii bins after inter/extra-polation by the function get_radplus
+    - ev: indices of the input data radii points within rm, i.e. the radii binning given in input is rm[ev]
+    """
+    
     radplus, rm, ev = get_radplus(WLdata.radii_wl)
 
     rho_out = rho_nfw_cr(radplus, *pmod) * WLdata.rho_crit
@@ -83,26 +155,26 @@ def WLmodel(WLdata, pmod):
     return gplus, rm, ev
 
 
+
+"""
+The following functions, of which the names end with "*_np" are the numpy equivalent of the theano functions above.
+They are useful for plotting, or when it is needed to evaluate the theano functions.
+"""
 def rho_nfw_cr_np(radii, c200, r200, delta=200.):
-    # Theano function for the Navarro-Frank-White density profile (Navarro et al. 1996)
-    # Should be multiplied by rho_crit(z)
     r = (radii[1:] + radii[:-1]) / 2 * 1000.
     delta_crit = (delta / 3) * (c200 ** 3) * (np.log(1. + c200) - c200 / (1 + c200)) ** (-1)
     return delta_crit / ((c200 * r / r200) * ((1. + (c200 * r / r200)) ** 2))
 
 
 def rho_to_sigma_np(radii_bins, rho):
-    # computes the projected mass density sigma given a density profile rho
-    # radii_bins*=1e-6
     deproj = MyDeprojVol(radii_bins[:-1], radii_bins[1:])
     proj_vol = deproj.deproj_vol().T
     area_proj = np.pi * (-(radii_bins[:-1] * 1e6) ** 2 + (radii_bins[1:] * 1e6) ** 2)
     sigma = np.dot(proj_vol, rho) / area_proj
-    return sigma * 1e12  # to get result in M_sun * Mpc**-2
+    return sigma * 1e12
 
 
 def dsigma_trap_np(sigma, radii):
-    # computes dsigma using numerical trap intergration
     rmean = (radii[1:] + radii[:-1]) / 2
     rmean2 = (rmean[1:] + rmean[:-1]) / 2
     m = np.tril(np.ones((len(rmean2) + 1, len(rmean2) + 1)))
@@ -121,16 +193,6 @@ def dsigma_trap_np(sigma, radii):
     return dsigma
 
 
-def get_shear(sigma, dsigma, mean_sigm_crit_inv, fl):
-    # computes the tangential shear g+ given the mass profile of the cluster (sigma, dsigma) and geometrical
-    # situation of background sources(mean_sigm_crit_inv, fl)
-    if fl == 0:
-        shear = dsigma * mean_sigm_crit_inv
-    else:
-        shear = dsigma * (mean_sigm_crit_inv + fl * sigma * mean_sigm_crit_inv ** 2)
-    return shear
-
-
 def WLmodel_np(WLdata, pmod):
     radplus, rm, ev = get_radplus(WLdata.radii_wl)
     rho_out = rho_nfw_cr_np(radplus, *pmod) * WLdata.rho_crit
@@ -139,8 +201,13 @@ def WLmodel_np(WLdata, pmod):
     gplus = get_shear(sig, dsigma, WLdata.msigmacrit, WLdata.fl)
     return gplus, rm, ev
 
+def rdelt_to_mdelt(r, z, cosmo, delta=200):
+    rhoc = cosmo.critical_density(z).to(u.M_sun * u.kpc**-3).value
+    return (4/3) * np.pi * delta * rhoc * r**3
+
 class WLData:
     '''
+    This class is initialized for each cluster in the catalog
     :type cosmo: astropy.cosmology
     '''
     def __init__(self, redshift, rin=None, rout=None, gplus=None, err_gplus=None,
