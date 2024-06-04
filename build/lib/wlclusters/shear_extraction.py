@@ -4,60 +4,6 @@ import astropy.units as u
 import astropy.constants as c
 from tqdm import tqdm
 
-# def compute_tangential_shear_profile(sources, center, z_cl, bin_edges, dz, cosmo):
-#     """
-#     Compute the tangential shear profile around a cluster center.
-#
-#     Args:
-#     - sources (DataFrame): Source catalogue DataFrame containing columns for 'RA', 'Dec', 'e_1', and 'e_2'.
-#     - center (list): List containing the RA and Dec coordinates of the cluster center in deg.
-#     - z_cl (float): Redshift of the cluster.
-#     - bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.
-#     - dz (float, optional): Redshift offset for source selection. Defaults to 0.1.
-#
-#     Returns:
-#     - bin_edges_deg (ndarray): Array of bin edges in deg.
-#     - bin_mean (ndarray): Array of mean bin values in deg.
-#     - signal (ndarray): Array of shear signal values.
-#     - errors (ndarray): Array of errors associated with each bin.
-#     """
-#     sources = sources[(sources['z_p'] >= z_cl + dz)]
-#     x, y = sources['RA'] - center[0], sources['Dec'] - center[1]
-#     theta = np.sqrt(x ** 2 + y ** 2)
-#     phi = np.arctan2(y, x)
-#     g1 = sources['e_1']
-#     g2 = -sources['e_2']
-#     gamma_plus = -g1 * np.cos(2 * phi) - g2 * np.sin(2 * phi)
-#
-#     # filtered_sources = sources[(sources['z_p'] >= z_cl + dz) & (theta <= max(bin_edges))]
-#     kpcp = cosmo.kpc_proper_per_arcmin(z_cl).value
-#
-#     nbins = len(bin_edges) - 1
-#     bin_edges_deg = (bin_edges * 1000) / (kpcp * 60)
-#     bin_mean = (bin_edges_deg[:-1] + bin_edges_deg[1:]) / 2
-#     signal = np.zeros(nbins)
-#     bin_count = np.zeros(nbins)
-#     variance = np.zeros(nbins)
-#     errors = np.zeros(nbins)
-#
-#     for i in range(nbins):
-#         mask = np.logical_and(theta >= bin_edges_deg[i], theta < bin_edges_deg[i + 1])
-#         bin_count[i] = np.sum(mask)
-#         if bin_count[i] > 0:
-#             signal[i] = np.sum(gamma_plus[mask]) / bin_count[i]
-#         else:
-#             signal[i] = 0
-#
-#         if bin_count[i] > 1:
-#             pixels_in_bin = np.where(mask)
-#             pixel_values = gamma_plus[pixels_in_bin]
-#             variance[i] = np.var(pixel_values, ddof=1)
-#             errors[i] = np.sqrt(variance[i] / bin_count[i])
-#         else:
-#             variance[i] = 0
-#             errors[i] = 0
-#
-#     return bin_edges_deg, bin_mean, signal, errors
 
 
 def compute_tangential_shear_profile(sources, center, z_cl, bin_edges, dz, cosmo):

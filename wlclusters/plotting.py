@@ -8,13 +8,13 @@ def wldata_from_ID(lens_id,
                    results,
                    all_chains=None,
                    return_shear=False,
-                   return_shear_model='enveloppe',
+                   return_shear_model='envelope',
                    cosmo=None):
 
     """
     Function to initalize a WLdata class for individual clusters.
     If done after fitting, can optionally compute shear profiles in two scenarios :
-        - return_shear_model='enveloppe' --> will compute the shear profile for each set of parameters in 'all_chains',
+        - return_shear_model='envelope' --> will compute the shear profile for each set of parameters in 'all_chains',
         - return_shear_model='median parameters' --> will compute the shear profile only for the median parameters.
 
 
@@ -23,7 +23,7 @@ def wldata_from_ID(lens_id,
     - cluster_cat: Catalog containing cluster information.
     - shear_profiles: Catalog containing shear profile information.
     - results: Results from lensing analysis.
-    - all_chains: Posterior chains for parameter estimates (needed for 'enveloppe' model).
+    - all_chains: Posterior chains for parameter estimates (needed for 'envelope' model).
     - return_shear: Whether to return shear profile data (default: False).
     - return_shear_model: Type of shear model to return ('median parameters' or 'enveloppe').
     - cosmo: Cosmological parameters.
@@ -62,10 +62,10 @@ def wldata_from_ID(lens_id,
             return wldata, gplus_med[mask], rm[mask]
 
 
-        elif return_shear_model == 'enveloppe':
+        elif return_shear_model == 'envelope':
 
             if all_chains is None:
-                print('Error: posterior chains are needed to compute the enveloppe.')
+                print('Error: posterior chains are needed to compute the envelope.')
                 return
 
 
