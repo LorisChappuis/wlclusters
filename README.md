@@ -6,6 +6,7 @@ conda create --name wlcl_env
 
 2 - Go in the environment, install newest version of pymc:
 
+conda activate wlcl_env
 conda install -c conda-forge pymc
 
 4 - Install wlclusters:
