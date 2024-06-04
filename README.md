@@ -12,7 +12,7 @@ conda activate wlcl_env
 conda install -c conda-forge pymc
 
 
-4 - Install wlclusters:
+3 - Install wlclusters:
 
 git clone https://github.com/LorisChappuis/wlclusters.git
 
@@ -21,7 +21,7 @@ cd wlclusters
 pip install .
 
 
-3 - Adding the environment as a jupyter notebook kernel :
+4 - Adding the environment as a jupyter notebook kernel :
 
 conda install -c anaconda ipykernel
 
@@ -29,6 +29,6 @@ python -m ipykernel install --user --name=wlcl_env
 
 
 
-4 - install ipywidgets for better pymc visualisation in jupyter-notebook (optional)
+5 - install ipywidgets for better pymc visualisation in jupyter-notebook (optional)
 
 conda install ipywidgets
