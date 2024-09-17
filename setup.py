@@ -8,7 +8,8 @@ setup(
         'numpy',
         'pymc',
         'astropy',
-        'scipy'
+        'scipy',
+        'tqdm'
     ],
     author='Loris Chappuis',
     description='A package to extract 1D shear profiles around galaxy cluster and fit them via density profile forward modeling',

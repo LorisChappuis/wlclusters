@@ -211,7 +211,7 @@ class WLData:
     :type cosmo: astropy.cosmology
     '''
     def __init__(self, redshift, rin=None, rout=None, gplus=None, err_gplus=None,
-                 sigmacrit_inv=None, fl=None, cosmo=None):
+                 sigmacrit_inv=None, fl=None, cosmo=None, unit='proper'):
 
         if rin is None or rout is None or gplus is None or err_gplus is None:
 
@@ -237,7 +237,10 @@ class WLData:
 
             from astropy.cosmology import Planck15 as cosmo
 
-        amin2kpc = cosmo.kpc_proper_per_arcmin(redshift).value
+        if unit == 'proper':
+            amin2kpc = cosmo.kpc_proper_per_arcmin(redshift).value
+        if unit == 'comoving':
+            amin2kpc = cosmo.kpc_comoving_per_arcmin(redshift).value
 
         self.rin_wl = rin * amin2kpc / 1e3 # Mpc
 
