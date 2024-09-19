@@ -2,130 +2,255 @@ import pymc as pm
 import numpy as np
 from astropy.table import Table
 from tqdm import tqdm
-from .modeling import WLData, WLmodel, rdelt_to_mdelt
+from .modeling import WLData, WLmodel
 from .utils import *
 
 
-def run(cluster_cat, shear_profiles, cosmo, covtype='None', input_covmat=None, unit='proper', ndraws=2000, ntune=1000):
 
-    all_c200_chains = []
-    all_r200_chains = []
 
+def select_covariance(covtype, input_covmat, clust_id, clust_z, cluster_profiles):
+    """
+    Selects the appropriate covariance matrix based on the type of covariance specified.
+
+    Parameters:
+    -----------
+    covtype : str
+        The type of covariance matrix to use. Options are 'lss_cov', 'tot_cov', or 'None'.
+    input_covmat : Table
+        The input covariance matrix table containing cluster IDs or redshifts.
+    clust_id : int
+        The ID of the current cluster.
+    clust_z : float
+        The redshift of the current cluster.
+    cluster_profiles : Table
+        Table containing the cluster shear profile information including statistical errors.
+
+    Returns:
+    --------
+    np.ndarray
+        The selected covariance matrix.
+    """
     if covtype == 'lss_cov':
-        if 'ID' in input_covmat.colnames:
-            print('using lss cov for each exact redshift')
-        elif 'z' in input_covmat.colnames:
-            print('using lss cov for an array of redshift')
-        else:
-            print('ERROR: The lss_cov table must contain either an "ID" or "z" column.')
+        lss_cov = input_covmat
+        if 'ID' in lss_cov.colnames:
+            return lss_cov['covariance_matrix'][np.isin(lss_cov['ID'], clust_id)][0]
+        elif 'z' in lss_cov.colnames:
+            closest_z = find_closest_redshift(clust_z, lss_cov['z'])
+            return lss_cov[np.isin(lss_cov['z'], closest_z)]['covariance_matrix'][0] + np.diag(np.square(cluster_profiles['errors']))
     elif covtype == 'tot_cov':
-        if 'ID' in input_covmat.colnames:
-            print('using tot cov for each exact redshift')
-        elif 'z' in input_covmat.colnames:
-            print('using tot cov for an array of redshift')
-        else:
-            print('ERROR: The tot_cov table must contain either an "ID" or "z" column.')
+        tot_cov = input_covmat
+        if 'ID' in tot_cov.colnames:
+            return tot_cov['covariance_matrix'][np.isin(tot_cov['ID'], clust_id)][0]
+        elif 'z' in tot_cov.colnames:
+            closest_z = find_closest_redshift(clust_z, tot_cov['z'])
+            return tot_cov[np.isin(tot_cov['z'], closest_z)]['covariance_matrix'][0]
     else:
-        print('no lss covariance')
+        return np.diag(np.square(cluster_profiles['errors']))
 
+def setup_parameters(parnames, cosmo, clust_z):
+    """
+    Sets up the parameters for the NFW profile model based on the chosen parameterization by converting the user choice into cdelt and rdelt.
 
+    Parameters:
+    -----------
+    parnames : list
+        List of parameter names to be used in the model (e.g. ['cdelt', 'rdelt'], ['cdelt', 'mdelt'], etc.).
+    cosmo : Cosmology
+        The cosmology object to be used for calculations.
+    clust_z : float
+        The redshift of the current cluster.
 
-    for cluster in tqdm(cluster_cat):
-        clust_id = cluster['ID']
-        clust_z = cluster['z_p']
+    Returns:
+    --------
+    list
+        List of parameters for the model.
+    """
+    if parnames == ['cdelt', 'rdelt']:
+        cdelt = pm.Uniform(name='cdelt', lower=1., upper=10.)
+        rdelt = pm.Uniform(name='rdelt', lower=200., upper=4000.)
+        pmod = [cdelt, rdelt]
+    elif parnames == ['cdelt', 'mdelt']:
+        cdelt = pm.Uniform(name='cdelt', lower=1., upper=10.)
+        mdelt = pm.Uniform(name='mdelt', lower=1e12, upper=1e16)
+        rdelt = pm.Deterministic('rdelt', mdelt_to_rdelt(mdelt, clust_z, cosmo))
+        pmod = [cdelt, rdelt]
+    elif parnames == ['log10cdelt', 'log10mdelt']:
+        log10cdelt = pm.Uniform(name='log10cdelt', lower=0., upper=1.)
+        log10mdelt = pm.Uniform(name='log10mdelt', lower=12., upper=16.)
+        cdelt = pm.Deterministic('cdelt', 10**log10cdelt)
+        mdelt = pm.Deterministic('mdelt', 10**log10mdelt)
+        rdelt = pm.Deterministic('rdelt', mdelt_to_rdelt(mdelt, clust_z, cosmo))
+        pmod = [cdelt, rdelt]
+    elif parnames == ['cdelt', 'log10mdelt']:
+        cdelt = pm.Uniform(name='cdelt', lower=1., upper=10.)
+        log10mdelt = pm.Uniform(name='log10mdelt', lower=12., upper=16.)
+        mdelt = pm.Deterministic('mdelt', 10**log10mdelt)
+        rdelt = pm.Deterministic('rdelt', mdelt_to_rdelt(mdelt, clust_z, cosmo))
+        pmod = [cdelt, rdelt]
+    else:
+        raise ValueError("Invalid parnames specified.")
+    return pmod
 
-        mask = shear_profiles['ID'] == clust_id
-        cluster_profiles = shear_profiles[mask]
-        if covtype == 'lss_cov':
-            lss_cov = input_covmat
-            if 'ID' in lss_cov.colnames:
-                # If the covariance matrix is based on cluster IDs
-                cluster_lss_cov = lss_cov['covariance_matrix'][np.isin(lss_cov['ID'], clust_id)][0]
-            elif 'z' in lss_cov.colnames:
-                # If the covariance matrix is based on redshift
-                closest_z = find_closest_redshift(clust_z, lss_cov['z'])
-                cluster_lss_cov = lss_cov[np.isin(lss_cov['z'], closest_z)]['covariance_matrix'][0]
-            else:
-                raise ValueError('The lss_cov table must contain either an "ID" or "z" column.')
-        elif covtype == 'tot_cov':
-            tot_cov = input_covmat
-            if 'ID' in tot_cov.colnames:
-                # If the covariance matrix is based on cluster IDs
-                cluster_tot_cov = tot_cov['covariance_matrix'][np.isin(tot_cov['ID'], clust_id)][0]
-            elif 'z' in tot_cov.colnames:
-                # If the covariance matrix is based on redshift
-                closest_z = find_closest_redshift(clust_z, tot_cov['z'])
-                cluster_tot_cov = tot_cov[np.isin(tot_cov['z'], closest_z)]['covariance_matrix'][0]
-            else:
-                raise ValueError('The tot_cov table must contain either an "ID" or "z" column.')
-        else:
-            cluster_lss_cov = np.zeros((len(cluster_profiles), len(cluster_profiles)))
+def forward_model(wldata, parnames, cosmo, clust_z, cov_mat):
+    """
+    Performs forward modeling of weak lensing data using a specified NFW profile and PyMC.
 
-        rin = cluster_profiles['rin']
-        rout = cluster_profiles['rout']
-        gplus = cluster_profiles['gplus']
-        errors = cluster_profiles['errors']
+    Parameters:
+    -----------
+    wldata : WLData
+        The weak lensing data object.
+    parnames : list
+        List of parameter names (strings) to be used in the model.
+    cosmo : Cosmology
+        The cosmology object to be used for calculations.
+    clust_z : float
+        The redshift of the current cluster.
+    cov_mat : np.ndarray
+        Covariance matrix for the weak lensing data.
 
-        mean_sigcrit_inv, fl = cluster_profiles['msci'][0], cluster_profiles['fl'][0]
+    Returns:
+    --------
+    trace : pymc5.backends.base.MultiTrace
+        The trace of the MCMC sampling process.
+    """
+    with pm.Model() as model:
+        # Setup parameters inside the model context
+        pmod = setup_parameters(parnames, cosmo, clust_z)
+        
+        # Build the weak lensing model
+        gmodel, rm, ev = WLmodel(wldata, pmod)
+        g_obs = pm.MvNormal('WL', mu=gmodel[ev], observed=wldata.gplus, cov=cov_mat)
 
-        wldata = WLData(redshift=clust_z, rin=rin, rout=rout, gplus=gplus,
-                        err_gplus=errors, sigmacrit_inv=mean_sigcrit_inv, fl=fl, cosmo=cosmo, unit=unit)
-        if covtype == 'tot_cov':
-            cov_mat = cluster_tot_cov
-        else:
-            cov_mat = cluster_lss_cov + np.diag(np.square(wldata.err_gplus))
+        # Sample the posterior
+        trace = pm.sample(draws=2000, tune=1000)
 
-        basic_model = pm.Model()
+    return trace
 
-        with basic_model:
-            cdelt = pm.Uniform(name='cdelt', lower=1., upper=10.)
-            rdelt = pm.Uniform(name='rdelt', lower=200., upper=4000.)
-            pmod = [cdelt, rdelt]
-            gmodel, rm, ev = WLmodel(wldata, pmod)
-            g_obs = pm.MvNormal('WL', mu=gmodel[ev], observed=wldata.gplus, cov=cov_mat)
+def extract_results(cluster_cat, all_chains, unit, cosmo, parnames):
+    """
+    Extracts the weak lensing modeling results, computing medians and percentiles for mass, radius, and concentration.
 
-        with basic_model:
-            trace = pm.sample(draws=ndraws, tune=ntune)
+    Parameters:
+    -----------
+    cluster_cat : Table
+        The catalog of clusters with ID and redshift information.
+    all_chains : Table
+        The posterior chains for concentration and radius/mass.
+    unit : str
+        The unit system to use ('proper' or 'comoving').
+    cosmo : Cosmology
+        The cosmology object to be used for calculations.
+    parnames : list
+        List of parameter names used in the model.
 
-        all_c200_chains.append(np.array(trace.posterior['cdelt']).flatten())
-        all_r200_chains.append(np.array(trace.posterior['rdelt']).flatten())
-
-    all_chains = Table()
-    all_chains['ID'] = [cluster['ID'] for cluster in cluster_cat]
-    all_chains['c200'] = all_c200_chains
-    all_chains['r200'] = all_r200_chains
-
-
-    # Calculate median, 16th, and 84th percentiles for c200 and r200
-    c200_med = np.median(all_chains['c200'], axis=1)
-    c200_perc_16 = np.percentile(all_chains['c200'], 16, axis=1)
-    c200_perc_84 = np.percentile(all_chains['c200'], 84, axis=1)
-
-    r200_med = np.median(all_chains['r200'], axis=1)
-    r200_perc_16 = np.percentile(all_chains['r200'], 16, axis=1)
-    r200_perc_84 = np.percentile(all_chains['r200'], 84, axis=1)
-
-    # Calculate m200
+    Returns:
+    --------
+    Table
+        Table containing the extracted results for each cluster (m200, r200, c200).
+    """
     z_p = cluster_cat['z_p']
+
+    if parnames == ['cdelt', 'rdelt']:
+
+        c200_med = np.median(all_chains['cdelt'], axis=1)
+        c200_perc_16 = np.percentile(all_chains['cdelt'], 16, axis=1)
+        c200_perc_84 = np.percentile(all_chains['cdelt'], 84, axis=1)
+
+        r200_med = np.median(all_chains['rdelt'], axis=1)
+        r200_perc_16 = np.percentile(all_chains['rdelt'], 16, axis=1)
+        r200_perc_84 = np.percentile(all_chains['rdelt'], 84, axis=1)
+
+        if unit == 'proper':
+            m200_med = rdelt_to_mdelt(r200_med, z_p, cosmo)
+            m200_perc_16 = rdelt_to_mdelt(r200_perc_16, z_p, cosmo)
+            m200_perc_84 = rdelt_to_mdelt(r200_perc_84, z_p, cosmo)
+        elif unit == 'comoving':
+            r200_proper_med = r200_med * (1 / (1 + z_p))
+            r200_proper_perc_16 = r200_perc_16 * (1 / (1 + z_p))
+            r200_proper_perc_84 = r200_perc_84 * (1 / (1 + z_p))
+            m200_med = rdelt_to_mdelt(r200_proper_med, z_p, cosmo)
+            m200_perc_16 = rdelt_to_mdelt(r200_proper_perc_16, z_p, cosmo)
+            m200_perc_84 = rdelt_to_mdelt(r200_proper_perc_84, z_p, cosmo)
+
+    elif parnames == ['cdelt', 'mdelt']:
+
+        c200_med = np.median(all_chains['cdelt'], axis=1)
+        c200_perc_16 = np.percentile(all_chains['cdelt'], 16, axis=1)
+        c200_perc_84 = np.percentile(all_chains['cdelt'], 84, axis=1)
+
+        m200_med = np.median(all_chains['mdelt'], axis=1)
+        m200_perc_16 = np.percentile(all_chains['mdelt'], 16, axis=1)
+        m200_perc_84 = np.percentile(all_chains['mdelt'], 84, axis=1)
+
+        if unit == 'proper':
+            r200_med = mdelt_to_rdelt(m200_med, z_p, cosmo)
+            r200_perc_16 = mdelt_to_rdelt(m200_perc_16, z_p, cosmo)
+            r200_perc_84 = mdelt_to_rdelt(m200_perc_84, z_p, cosmo)
+        elif unit == 'comoving':
+            m200_proper_med = m200_med * (1 / (1 + z_p))
+            m200_proper_perc_16 = m200_perc_16 * (1 / (1 + z_p))
+            m200_proper_perc_84 = m200_perc_84 * (1 / (1 + z_p))
+            r200_med = mdelt_to_rdelt(m200_proper_med, z_p, cosmo)
+            r200_perc_16 = mdelt_to_rdelt(m200_proper_perc_16, z_p, cosmo)
+            r200_perc_84 = mdelt_to_rdelt(m200_proper_perc_84, z_p, cosmo)
+
+    elif parnames == ['log10cdelt', 'log10mdelt']:
+
+        c200_med = np.median(10**all_chains['log10cdelt'], axis=1)
+        c200_perc_16 = np.percentile(10**all_chains['log10cdelt'], 16, axis=1)
+        c200_perc_84 = np.percentile(10**all_chains['log10cdelt'], 84, axis=1)
+
+        m200_med = np.median(10**all_chains['log10mdelt'], axis=1)
+        m200_perc_16 = np.percentile(10**all_chains['log10mdelt'], 16, axis=1)
+        m200_perc_84 = np.percentile(10**all_chains['log10mdelt'], 84, axis=1)
+
+        if unit == 'proper':
+            r200_med = mdelt_to_rdelt(m200_med, z_p, cosmo)
+            r200_perc_16 = mdelt_to_rdelt(m200_perc_16, z_p, cosmo)
+            r200_perc_84 = mdelt_to_rdelt(m200_perc_84, z_p, cosmo)
+        elif unit == 'comoving':
+            m200_proper_med = m200_med * (1 / (1 + z_p))
+            m200_proper_perc_16 = m200_perc_16 * (1 / (1 + z_p))
+            m200_proper_perc_84 = m200_perc_84 * (1 / (1 + z_p))
+            r200_med = mdelt_to_rdelt(m200_proper_med, z_p, cosmo)
+            r200_perc_16 = mdelt_to_rdelt(m200_proper_perc_16, z_p, cosmo)
+            r200_perc_84 = mdelt_to_rdelt(m200_proper_perc_84, z_p, cosmo)
+
+    elif parnames == ['cdelt', 'log10mdelt']:
+
+        c200_med = np.median(all_chains['cdelt'], axis=1)
+        c200_perc_16 = np.percentile(all_chains['cdelt'], 16, axis=1)
+        c200_perc_84 = np.percentile(all_chains['cdelt'], 84, axis=1)
+
+        m200_med = np.median(10**all_chains['log10mdelt'], axis=1)
+        m200_perc_16 = np.percentile(10**all_chains['log10mdelt'], 16, axis=1)
+        m200_perc_84 = np.percentile(10**all_chains['log10mdelt'], 84, axis=1)
+
+        if unit == 'proper':
+            r200_med = mdelt_to_rdelt(m200_med, z_p, cosmo)
+            r200_perc_16 = mdelt_to_rdelt(m200_perc_16, z_p, cosmo)
+            r200_perc_84 = mdelt_to_rdelt(m200_perc_84, z_p, cosmo)
+        elif unit == 'comoving':
+            m200_proper_med = m200_med * (1 / (1 + z_p))
+            m200_proper_perc_16 = m200_perc_16 * (1 / (1 + z_p))
+            m200_proper_perc_84 = m200_perc_84 * (1 / (1 + z_p))
+            r200_med = mdelt_to_rdelt(m200_proper_med, z_p, cosmo)
+            r200_perc_16 = mdelt_to_rdelt(m200_proper_perc_16, z_p, cosmo)
+            r200_perc_84 = mdelt_to_rdelt(m200_proper_perc_84, z_p, cosmo)
 
     if unit == 'proper':
         m200_med = rdelt_to_mdelt(r200_med, z_p, cosmo)
         m200_perc_16 = rdelt_to_mdelt(r200_perc_16, z_p, cosmo)
         m200_perc_84 = rdelt_to_mdelt(r200_perc_84, z_p, cosmo)
-
-    if unit == 'comoving':
-        r200_proper_med = r200_med * (1/(1+z_p))
-        r200_proper_perc_16 = r200_perc_16 * (1/(1+z_p))
-        r200_proper_perc_84 = r200_perc_84 * (1/(1+z_p))
+    elif unit == 'comoving':
+        r200_proper_med = r200_med * (1 / (1 + z_p))
+        r200_proper_perc_16 = r200_perc_16 * (1 / (1 + z_p))
+        r200_proper_perc_84 = r200_perc_84 * (1 / (1 + z_p))
         m200_med = rdelt_to_mdelt(r200_proper_med, z_p, cosmo)
         m200_perc_16 = rdelt_to_mdelt(r200_proper_perc_16, z_p, cosmo)
         m200_perc_84 = rdelt_to_mdelt(r200_proper_perc_84, z_p, cosmo)
 
-
-
     results_table = Table()
-
-    # Add columns to the table
     results_table['ID'] = cluster_cat['ID']
     results_table['m200_med'] = m200_med
     results_table['m200_perc_16'] = m200_perc_16
@@ -137,4 +262,69 @@ def run(cluster_cat, shear_profiles, cosmo, covtype='None', input_covmat=None, u
     results_table['c200_perc_16'] = c200_perc_16
     results_table['c200_perc_84'] = c200_perc_84
 
-    return all_chains, results_table
+    return results_table
+
+def run(cluster_cat, shear_profiles, cosmo, covtype='None', input_covmat=None, unit='proper', ndraws=2000, ntune=1000, parnames=['cdelt', 'rdelt']):
+    """
+    Executes the full weak lensing modeling pipeline for a catalog of clusters.
+
+    Parameters:
+    -----------
+    cluster_cat : Table
+        The catalog of clusters with ID and redshift information.
+    shear_profiles : Table
+        The shear profiles for each cluster, containing gplus and error data.
+    cosmo : Cosmology
+        The cosmology object to be used for calculations.
+    covtype : str, optional
+        The type of covariance matrix to use ('lss_cov', 'tot_cov', or 'None'). Default is 'None'.
+    input_covmat : Table, optional
+        Input covariance matrix table if applicable.
+    unit : str, optional
+        Unit system to use ('proper' or 'comoving'). Default is 'proper'.
+    ndraws : int, optional
+        Number of draws for MCMC sampling. Default is 2000.
+    ntune : int, optional
+        Number of tuning steps for MCMC. Default is 1000.
+    parnames : list, optional
+        List of parameter names used for modeling. Default is ['cdelt', 'rdelt'].
+
+    Returns:
+    --------
+    Table
+        Table containing the posterior chains and the extracted results for each cluster.
+    """    
+    all_c200_chains = []
+    all_r200_chains = []
+
+    for cluster in tqdm(cluster_cat):
+        clust_id = cluster['ID']
+        clust_z = cluster['z_p']
+
+        mask = shear_profiles['ID'] == clust_id
+        cluster_profiles = shear_profiles[mask]
+
+        cov_mat = select_covariance(covtype, input_covmat, clust_id, clust_z, cluster_profiles)
+
+        rin = cluster_profiles['rin']
+        rout = cluster_profiles['rout']
+        gplus = cluster_profiles['gplus']
+        errors = cluster_profiles['errors']
+
+        mean_sigcrit_inv, fl = cluster_profiles['msci'][0], cluster_profiles['fl'][0]
+
+        wldata = WLData(redshift=clust_z, rin=rin, rout=rout, gplus=gplus,
+                        err_gplus=errors, sigmacrit_inv=mean_sigcrit_inv, fl=fl, cosmo=cosmo, unit=unit)
+
+        # Call forward_model with all arguments
+        trace = forward_model(wldata, parnames, cosmo, clust_z, cov_mat)
+
+        all_c200_chains.append(np.array(trace.posterior[parnames[0]]).flatten())
+        all_r200_chains.append(np.array(trace.posterior[parnames[1]]).flatten())
+
+    all_chains = Table()
+    all_chains['ID'] = [cluster['ID'] for cluster in cluster_cat]
+    all_chains[str(parnames[0])] = all_c200_chains
+    all_chains[str(parnames[1])] = all_r200_chains
+
+    return all_chains, extract_results(cluster_cat, all_chains, unit, cosmo, parnames)

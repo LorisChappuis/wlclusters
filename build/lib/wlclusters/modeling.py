@@ -4,23 +4,49 @@ from .deproject import MyDeprojVol
 import pymc as pm
 
 
-def rho_nfw_cr(radii, cdelt, rdelt, delta=200.):
 
+def rho_nfw_cr(radii, pmod, parnames=['cdelt', 'rdelt'], delta=200., rho_crit=None):
     """
-    Theano function for the Navarro-Frank-White density profile (Navarro et al. 1996).
+    PyMC (Theano) function for the Navarro-Frenk-White (NFW) density profile (Navarro et al. 1996).
 
     Args:
-    - radii: in Mpc.
-    - cdelt: NFW concentration
-    - cdelt: NFW overdensity radius
-    - delta: chosen overdensity, default is 200
+    - radii: Array of radial distances in Mpc.
+    - pmod: Parameter model, containing values for concentration and radius/mass in the order defined by parnames.
+    - parnames: List defining the parameter names; possible values are ['cdelt', 'rdelt'], ['cdelt', 'mdelt'],
+                ['log10cdelt', 'log10mdelt'], ['cdelt', 'log10mdelt']. Default is ['cdelt', 'rdelt'].
+    - delta: Chosen overdensity, default is 200.
+    - rho_crit: Critical density of the universe at the cluster's redshift (required for mdelt to rdelt conversion).
 
     Returns:
-    - NFW density profile / critical density of the Universe (i.e. needs to be multiplied by rho_crit(z))
+    - NFW density profile divided by the critical density of the Universe (multiply by rho_crit to get physical density).
     """
 
-    r = (radii[1:] + radii[:-1]) / 2 * 1000.
-    delta_crit = (delta / 3) * (cdelt ** 3) * (pm.math.log(1. + cdelt) - cdelt / (1 + cdelt)) ** (-1)
+    # Calculate r as the midpoints of radii
+    r = (radii[1:] + radii[:-1]) / 2 * 1000.  # Convert radii to kpc
+
+    # Extract parameters based on parnames
+    if parnames == ['cdelt', 'rdelt']:
+        cdelt, rdelt = pmod
+    elif parnames == ['cdelt', 'mdelt']:
+        cdelt, mdelt = pmod
+        # Convert mdelt to rdelt using the relation between mass and radius
+        rdelt = (3 * mdelt / (4 * np.pi * delta * rho_crit)) ** (1 / 3)
+    elif parnames == ['log10cdelt', 'log10mdelt']:
+        log10cdelt, log10mdelt = pmod
+        cdelt = 10**log10cdelt
+        mdelt = 10**log10mdelt
+        rdelt = (3 * mdelt / (4 * np.pi * delta * rho_crit))**(1/3)
+    elif parnames == ['cdelt', 'log10mdelt']:
+        cdelt, log10mdelt = pmod
+        mdelt = 10**log10mdelt
+        rdelt =(3 * mdelt / (4 * np.pi * delta * rho_crit))**(1/3)
+    else:
+        raise ValueError("Invalid parnames specified.")
+
+    # Calculate delta_crit using PyMC math functions
+    delta_crit = (delta / 3) * (cdelt**3) * (pm.math.log(1. + cdelt) - cdelt / (1 + cdelt)) ** (-1)
+
+    # Return NFW density profile
     return delta_crit / ((cdelt * r / rdelt) * ((1. + (cdelt * r / rdelt)) ** 2))
 
 
@@ -144,7 +170,7 @@ def WLmodel(WLdata, pmod):
     
     radplus, rm, ev = get_radplus(WLdata.radii_wl)
 
-    rho_out = rho_nfw_cr(radplus, *pmod) * WLdata.rho_crit
+    rho_out = rho_nfw_cr(radplus, pmod) * WLdata.rho_crit
 
     sig = rho_to_sigma(radplus, rho_out)
 
@@ -195,15 +221,11 @@ def dsigma_trap_np(sigma, radii):
 
 def WLmodel_np(WLdata, pmod):
     radplus, rm, ev = get_radplus(WLdata.radii_wl)
-    rho_out = rho_nfw_cr_np(radplus, *pmod) * WLdata.rho_crit
+    rho_out = rho_nfw_cr_np(radplus, pmod) * WLdata.rho_crit
     sig = rho_to_sigma_np(radplus, rho_out)
     dsigma = dsigma_trap_np(sig, radplus)
     gplus = get_shear(sig, dsigma, WLdata.msigmacrit, WLdata.fl)
     return gplus, rm, ev
-
-def rdelt_to_mdelt(r, z, cosmo, delta=200):
-    rhoc = cosmo.critical_density(z).to(u.M_sun * u.kpc**-3).value
-    return (4/3) * np.pi * delta * rhoc * r**3
 
 class WLData:
     '''

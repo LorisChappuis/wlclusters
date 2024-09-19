@@ -88,7 +88,7 @@ def compute_tangential_shear_profile(sources, center, z_cl, bin_edges, dz, cosmo
                 e_rms = sources['e_rms'][mask]
                 R_i = 1 - np.sum(w[mask] * e_rms ** 2) / np.sum(w[mask])
             else:
-                R_i = 1  # Assume R=1 if not provided
+                R_i = 0.5  # Assume 2*R=1 if not provided
 
             # Compute weighted shear including multiplicative bias and responsivity
             weighted_shear = w[mask] * gamma_plus[mask] / (2 * R_i * (1 + m[mask]))
