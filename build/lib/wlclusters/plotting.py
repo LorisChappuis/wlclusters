@@ -2,6 +2,7 @@ import numpy as np
 from tqdm import tqdm
 from .modeling import WLData, WLmodel_np
 import random
+
 def wldata_from_ID(lens_id,
                    cluster_cat,
                    shear_profiles,
@@ -12,25 +13,54 @@ def wldata_from_ID(lens_id,
                    cosmo=None):
 
     """
-    Function to initalize a WLdata class for individual clusters.
-    If done after fitting, can optionally compute shear profiles in two scenarios :
-        - return_shear_model='envelope' --> will compute the shear profile for each set of parameters in 'all_chains',
-        - return_shear_model='median parameters' --> will compute the shear profile only for the median parameters.
+    Initialize a WLData class for an individual cluster, optionally computing shear profiles.
 
+    This function creates a `WLData` object based on the given cluster lens ID. 
+    If done after fitting, it can optionally compute shear profiles under two scenarios:
+    
+    - `'envelope'`: Computes the shear profile for each set of parameters in `all_chains`.
+    - `'median parameters'`: Computes the shear profile for only the median parameters.
 
-    Parameters:
-    - lens_id: ID of the lens.
-    - cluster_cat: Catalog containing cluster information.
-    - shear_profiles: Catalog containing shear profile information.
-    - results: Results from lensing analysis.
-    - all_chains: Posterior chains for parameter estimates (needed for 'envelope' model).
-    - return_shear: Whether to return shear profile data (default: False).
-    - return_shear_model: Type of shear model to return ('median parameters' or 'enveloppe').
-    - cosmo: Cosmological parameters.
+    Parameters
+    ----------
+    lens_id : int or list of int
+        ID of the lens or a list of lens IDs.
+    cluster_cat : ndarray or pandas.DataFrame
+        Catalog containing cluster information.
+    shear_profiles : ndarray or pandas.DataFrame
+        Catalog containing shear profile information.
+    results : ndarray or pandas.DataFrame
+        Results from the lensing analysis.
+    all_chains : ndarray, optional
+        Posterior chains for parameter estimates (required for the 'envelope' model). 
+        Defaults to None.
+    return_shear : bool, optional
+        If True, returns shear profile data. Defaults to False.
+    return_shear_model : str, optional
+        Type of shear model to return, either 'median parameters' or 'envelope'. 
+        Defaults to 'envelope'.
+    cosmo : object, optional
+        Cosmological parameters object. Defaults to None.
 
-    Returns:
-    - wldata: Weak lensing data object.
-    - Optionally returns shear profiles based on the selected model.
+    Returns
+    -------
+    wldata : WLData
+        Weak lensing data object.
+    tuple, optional
+        If `return_shear=True`, a tuple is returned:
+        
+        - If `return_shear_model='median parameters'`: 
+            - `gplus_med`: Shear profile for the median parameters.
+            - `rm`: Radial bins for the shear profile.
+        
+        - If `return_shear_model='envelope'`:
+            - `gplus_results`: Shear profiles for sampled parameter sets from `all_chains`.
+            - `rm`: Radial bins for the shear profile.
+
+    Raises
+    ------
+    ValueError
+        If `all_chains` is None when `return_shear_model='envelope'` is selected.
     """
 
     # Extract relevant data based the ID of the chosen cluster

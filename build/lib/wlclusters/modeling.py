@@ -4,44 +4,24 @@ from .deproject import MyDeprojVol
 import pymc as pm
 
 
-
-def rho_nfw_cr(radii, pmod, parnames=['cdelt', 'rdelt'], delta=200., rho_crit=None):
+def rho_nfw_cr(radii, pmod, delta=200.):
     """
-    PyMC (Theano) function for the Navarro-Frenk-White (NFW) density profile (Navarro et al. 1996).
+    Computes the Navarro-Frenk-White (NFW) density profile using PyMC (Theano) for a given radial distance array.
+    Multiply the result by the critical density of the universe to get the physical density.
 
     Args:
-    - radii: Array of radial distances in Mpc.
-    - pmod: Parameter model, containing values for concentration and radius/mass in the order defined by parnames.
-    - parnames: List defining the parameter names; possible values are ['cdelt', 'rdelt'], ['cdelt', 'mdelt'],
-                ['log10cdelt', 'log10mdelt'], ['cdelt', 'log10mdelt']. Default is ['cdelt', 'rdelt'].
-    - delta: Chosen overdensity, default is 200.
-    - rho_crit: Critical density of the universe at the cluster's redshift (required for mdelt to rdelt conversion).
+        radii (array): Radial distances in Mpc.
+        pmod (list): Parameters model, containing concentration and radius/mass.
+        delta (float, optional): Overdensity parameter, defaults to 200.
 
     Returns:
-    - NFW density profile divided by the critical density of the Universe (multiply by rho_crit to get physical density).
+        array: NFW density profile divided by the critical density of the universe.
     """
 
     # Calculate r as the midpoints of radii
     r = (radii[1:] + radii[:-1]) / 2 * 1000.  # Convert radii to kpc
 
-    # Extract parameters based on parnames
-    if parnames == ['cdelt', 'rdelt']:
-        cdelt, rdelt = pmod
-    elif parnames == ['cdelt', 'mdelt']:
-        cdelt, mdelt = pmod
-        # Convert mdelt to rdelt using the relation between mass and radius
-        rdelt = (3 * mdelt / (4 * np.pi * delta * rho_crit)) ** (1 / 3)
-    elif parnames == ['log10cdelt', 'log10mdelt']:
-        log10cdelt, log10mdelt = pmod
-        cdelt = 10**log10cdelt
-        mdelt = 10**log10mdelt
-        rdelt = (3 * mdelt / (4 * np.pi * delta * rho_crit))**(1/3)
-    elif parnames == ['cdelt', 'log10mdelt']:
-        cdelt, log10mdelt = pmod
-        mdelt = 10**log10mdelt
-        rdelt =(3 * mdelt / (4 * np.pi * delta * rho_crit))**(1/3)
-    else:
-        raise ValueError("Invalid parnames specified.")
+    cdelt, rdelt = pmod
 
     # Calculate delta_crit using PyMC math functions
     delta_crit = (delta / 3) * (cdelt**3) * (pm.math.log(1. + cdelt) - cdelt / (1 + cdelt)) ** (-1)
@@ -50,17 +30,36 @@ def rho_nfw_cr(radii, pmod, parnames=['cdelt', 'rdelt'], delta=200., rho_crit=No
     return delta_crit / ((cdelt * r / rdelt) * ((1. + (cdelt * r / rdelt)) ** 2))
 
 
+def rho_nfw_cr_np(radii, c200, r200, delta=200.):
+    """
+    Computes the Navarro-Frenk-White (NFW) density profile using NumPy for a given radial distance array.
+    Multiply the result by the critical density of the universe to get the physical density.
+
+    Args:
+        radii (array): Radial distances in Mpc.
+        c200 (float): Concentration parameter.
+        r200 (float): Radius parameter (in Mpc).
+        delta (float, optional): Overdensity parameter, defaults to 200.
+
+    Returns:
+        array: NFW density profile divided by the critical density of the universe.
+    """
+    r = (radii[1:] + radii[:-1]) / 2 * 1000.
+    delta_crit = (delta / 3) * (c200 ** 3) * (np.log(1. + c200) - c200 / (1 + c200)) ** (-1)
+    return delta_crit / ((c200 * r / r200) * ((1. + (c200 * r / r200)) ** 2))
+
+
 def rho_to_sigma(radii_bins, rho):
 
     """
-   Recovers the projected surface mass density by projecting a density profile
+    Projects a 3D density profile to compute the surface mass density using PyMC (Theano).
 
     Args:
-    - radii_bins
-    - rho: density profile
+        radii_bins (array): Binned radial distances.
+        rho (array): 3D density profile values.
 
     Returns:
-    - surface mass density in M_sun * Mpc**-2
+        array: Projected surface mass density in units of M_sun * Mpc**-2.
     """
 
     deproj = MyDeprojVol(radii_bins[:-1], radii_bins[1:])
@@ -69,17 +68,36 @@ def rho_to_sigma(radii_bins, rho):
     sigma = pm.math.dot(proj_vol, rho) / area_proj
     return sigma * 1e12
 
+def rho_to_sigma_np(radii_bins, rho):
+
+    """
+    Projects a 3D density profile to compute the surface mass density using NumPy.
+
+    Args:
+        radii_bins (array): Binned radial distances.
+        rho (array): 3D density profile values.
+
+    Returns:
+        array: Projected surface mass density in units of M_sun * Mpc**-2.
+    """
+
+    deproj = MyDeprojVol(radii_bins[:-1], radii_bins[1:])
+    proj_vol = deproj.deproj_vol().T
+    area_proj = np.pi * (-(radii_bins[:-1] * 1e6) ** 2 + (radii_bins[1:] * 1e6) ** 2)
+    sigma = np.dot(proj_vol, rho) / area_proj
+    return sigma * 1e12
+
 
 def dsigma_trap(sigma, radii):
     """
-   computes Delta Sigma using numerical trapezoidal intergration
+    Computes Delta Sigma, the differential surface mass density, using numerical trapezoidal integration.
 
     Args:
-    - sigma: projected surface mass density
-    - radii
+        sigma (array): Projected surface mass density values.
+        radii (array): Radial distances.
 
     Returns:
-    - Delta Sigma
+        array: Differential surface mass density (Delta Sigma).
     """
 
     rmean = (radii[1:] + radii[:-1]) / 2
@@ -103,104 +121,17 @@ def dsigma_trap(sigma, radii):
     dsigma = sigmabar - sigma
     return dsigma
 
-
-def get_shear(sigma, dsigma, mean_sigm_crit_inv, fl):
-    """
-   computes the expected tangential shear profile using Seitz and Schneider 1997 (or Umestu 2020 equation 93)
-
-    Args:
-    - sigma: projected surface mass density
-    - dsigma: Delta Sigma
-    - mean_sigm_crit_inv: value of the inverse mean critical density <sigcrit**-1> in Mpc**2.Msun**-1
-    - fl: value of <sigcrit**-2> / (<sigcrit**-1>**2)
-
-    Returns:
-    - mean tangential shear
-    """
-
-    shear = (dsigma * mean_sigm_crit_inv) / (1 - fl * sigma * mean_sigm_crit_inv)
-
-    return shear
-
-
-def get_radplus(radii, rmin=1e-3, rmax=1e2, nptplus=19):
-    """
-   for the numericat integration to be successful, it is useful to create a set of fictive points at low radii aswell
-   as between each data point
-
-    Args:
-    - radii: input radii of the data points
-    - dsigma: Delta Sigma
-    - mean_sigm_crit_inv: value of the inverse mean critical density <sigcrit**-1> in Mpc**2.Msun**-1
-    - fl: value of <sigcrit**-2> / (<sigcrit**-1>**2)
-
-    Returns:
-    - radplus: new set of extra/inter-polated radii values, including the values of "radii"
-    - rmeanplus: central values of "radplus"
-    - evalrad: indices of the "radii" points within "radplus"
-    """
-
-    if nptplus % 2 == 0:
-        nptplus = nptplus + 1
-    rmean = (radii[1:] + radii[:-1]) / 2.
-    radplus = np.logspace(np.log10(rmin), np.log10(radii[0]), nptplus)
-    for i in range(len(radii) - 1):
-        vplus = np.linspace(radii[i], radii[i + 1], nptplus + 1)
-        radplus = np.append(radplus, vplus[1:])
-    radplus = np.append(radplus, np.logspace(np.log10(radplus[-1]), np.log10(rmax), 20)[1:])
-    rmeanplus = (radplus[1:] + radplus[:-1]) / 2.
-    nsym = int(np.floor(nptplus / 2))
-    evalrad = (np.arange(nptplus + nsym - 1, nptplus + nsym + len(rmean) * nptplus, nptplus))[:len(rmean)]
-    return radplus, rmeanplus, evalrad
-
-
-def WLmodel(WLdata, pmod):
-    """
-   Modeling of the mean tangential shear for a given density profile at a given redshift
-
-    Args:
-    - WLdata: class containing all the useful informations about the cluster (radii binning, redshift, msci, fl..)
-    - pmod: list containing the density profile parameters values, in the case NFW, cdelta and rdelta
-
-    Returns:
-    - gplus: predicted mean tangential shear profile
-    - rm: radii bins after inter/extra-polation by the function get_radplus
-    - ev: indices of the input data radii points within rm, i.e. the radii binning given in input is rm[ev]
-    """
-    
-    radplus, rm, ev = get_radplus(WLdata.radii_wl)
-
-    rho_out = rho_nfw_cr(radplus, pmod) * WLdata.rho_crit
-
-    sig = rho_to_sigma(radplus, rho_out)
-
-    dsigma = dsigma_trap(sig, radplus)
-
-    gplus = get_shear(sig, dsigma, WLdata.msigmacrit, WLdata.fl)
-
-    return gplus, rm, ev
-
-
-
-"""
-The following functions, of which the names end with "*_np" are the numpy equivalent of the theano functions above.
-They are useful for plotting, or when it is needed to evaluate the theano functions.
-"""
-def rho_nfw_cr_np(radii, c200, r200, delta=200.):
-    r = (radii[1:] + radii[:-1]) / 2 * 1000.
-    delta_crit = (delta / 3) * (c200 ** 3) * (np.log(1. + c200) - c200 / (1 + c200)) ** (-1)
-    return delta_crit / ((c200 * r / r200) * ((1. + (c200 * r / r200)) ** 2))
-
-
-def rho_to_sigma_np(radii_bins, rho):
-    deproj = MyDeprojVol(radii_bins[:-1], radii_bins[1:])
-    proj_vol = deproj.deproj_vol().T
-    area_proj = np.pi * (-(radii_bins[:-1] * 1e6) ** 2 + (radii_bins[1:] * 1e6) ** 2)
-    sigma = np.dot(proj_vol, rho) / area_proj
-    return sigma * 1e12
-
-
 def dsigma_trap_np(sigma, radii):
+    """
+    Computes Delta Sigma using numerical trapezoidal integration with NumPy.
+
+    Args:
+        sigma (array): Projected surface mass density values.
+        radii (array): Radial distances.
+
+    Returns:
+        array: Differential surface mass density (Delta Sigma).
+    """
     rmean = (radii[1:] + radii[:-1]) / 2
     rmean2 = (rmean[1:] + rmean[:-1]) / 2
     m = np.tril(np.ones((len(rmean2) + 1, len(rmean2) + 1)))
@@ -219,7 +150,122 @@ def dsigma_trap_np(sigma, radii):
     return dsigma
 
 
+def get_shear(sigma, dsigma, mean_sigm_crit_inv, fl):
+    """
+    Computes the expected tangential shear profile using the Seitz and Schneider 1997 (or Umetsu 2020) formula.
+
+    Args:
+        sigma (array): Projected surface mass density.
+        dsigma (array): Differential surface mass density (Delta Sigma).
+        mean_sigm_crit_inv (float): Mean inverse critical surface mass density.
+        fl (float): Correction factor for second-order lensing effects.
+
+    Returns:
+        array: Mean tangential shear profile.
+    """
+
+    shear = (dsigma * mean_sigm_crit_inv) / (1 - fl * sigma * mean_sigm_crit_inv)
+
+    return shear
+
+
+
+def get_radplus(radii, rmin=1e-3, rmax=1e2, nptplus=19):
+    """
+    Generates additional interpolated/extrapolated radii points for integration.
+
+    Args:
+        radii (array): Input radii.
+        rmin (float, optional): Minimum radius value for extrapolation, defaults to 1e-3.
+        rmax (float, optional): Maximum radius value for extrapolation, defaults to 1e2.
+        nptplus (int, optional): Number of additional points, defaults to 19.
+
+    Returns:
+        tuple: 
+            - radplus (array): Extended radii array.
+            - rmeanplus (array): Midpoint of extended radii.
+            - evalrad (array): Indices of original radii within extended radii array.
+    """
+
+    if nptplus % 2 == 0:
+        nptplus = nptplus + 1
+    rmean = (radii[1:] + radii[:-1]) / 2.
+    radplus = np.logspace(np.log10(rmin), np.log10(radii[0]), nptplus)
+    for i in range(len(radii) - 1):
+        vplus = np.linspace(radii[i], radii[i + 1], nptplus + 1)
+        radplus = np.append(radplus, vplus[1:])
+    radplus = np.append(radplus, np.logspace(np.log10(radplus[-1]), np.log10(rmax), 20)[1:])
+    rmeanplus = (radplus[1:] + radplus[:-1]) / 2.
+    nsym = int(np.floor(nptplus / 2))
+    evalrad = (np.arange(nptplus + nsym - 1, nptplus + nsym + len(rmean) * nptplus, nptplus))[:len(rmean)]
+    return radplus, rmeanplus, evalrad
+
+
+def WLmodel(WLdata, pmod):
+    """
+    PyMC (Theano) model for predicting the mean tangential shear profile for a given density profile at a specified redshift.
+
+    Parameters
+    ----------
+    WLdata : WLData
+        Object containing all the necessary information about the cluster. This includes:
+        radii_wl : The radial bins for the weak lensing data.
+        rho_crit : The critical density at the cluster's redshift.
+        msigmacrit : Mean inverse critical surface mass density for the cluster.
+        fl : Second-order correction factor for weak lensing measurements.
+    pmod : list
+        List of parameters for the density profile model. For an NFW profile, this typically includes:
+        cdelta : Concentration parameter.
+        rdelta : Scale radius parameter.
+
+    Returns
+    -------
+    gplus : numpy.ndarray
+        Predicted mean tangential shear profile at the input radii.
+    rm : numpy.ndarray
+        Radii bins after applying interpolation or extrapolation through the function `get_radplus`.
+    ev : numpy.ndarray
+        Indices of the input data radii points within the new radii array, `rm`.
+    """
+    
+    radplus, rm, ev = get_radplus(WLdata.radii_wl)
+
+    rho_out = rho_nfw_cr(radplus, pmod) * WLdata.rho_crit
+
+    sig = rho_to_sigma(radplus, rho_out)
+
+    dsigma = dsigma_trap(sig, radplus)
+
+    gplus = get_shear(sig, dsigma, WLdata.msigmacrit, WLdata.fl)
+
+    return gplus, rm, ev
+
 def WLmodel_np(WLdata, pmod):
+    """
+    Numpy model for predicting the mean tangential shear profile for a given density profile at a specified redshift.
+
+    Parameters
+    ----------
+    WLdata : WLData
+        Object containing all the necessary information about the cluster. This includes:
+        radii_wl : The radial bins for the weak lensing data.
+        rho_crit : The critical density at the cluster's redshift.
+        msigmacrit : Mean inverse critical surface mass density for the cluster.
+        fl : Second-order correction factor for weak lensing measurements.
+    pmod : list
+        List of parameters for the density profile model. For an NFW profile, this typically includes:
+        cdelta : Concentration parameter.
+        rdelta : Scale radius parameter.
+
+    Returns
+    -------
+    gplus : numpy.ndarray
+        Predicted mean tangential shear profile at the input radii.
+    rm : numpy.ndarray
+        Radii bins after applying interpolation or extrapolation through the function `get_radplus`.
+    ev : numpy.ndarray
+        Indices of the input data radii points within the new radii array, `rm`.
+    """
     radplus, rm, ev = get_radplus(WLdata.radii_wl)
     rho_out = rho_nfw_cr_np(radplus, pmod) * WLdata.rho_crit
     sig = rho_to_sigma_np(radplus, rho_out)
@@ -227,11 +273,60 @@ def WLmodel_np(WLdata, pmod):
     gplus = get_shear(sig, dsigma, WLdata.msigmacrit, WLdata.fl)
     return gplus, rm, ev
 
+
+
 class WLData:
-    '''
-    This class is initialized for each cluster in the catalog
-    :type cosmo: astropy.cosmology
-    '''
+    """
+    A class to represent the weak lensing data for a galaxy cluster.
+
+    Attributes
+    ----------
+    gplus : numpy.ndarray
+        Mean tangential shear for the weak lensing data.
+    err_gplus : numpy.ndarray
+        Error on the mean tangential shear.
+    rin_wl : numpy.ndarray
+        Inner radial bin edges (in Mpc).
+    rout_wl : numpy.ndarray
+        Outer radial bin edges (in Mpc).
+    radii_wl : numpy.ndarray
+        Combined radial bin edges (inner + outer) for weak lensing data.
+    rref_wl : numpy.ndarray
+        Reference radius for each radial bin, defined as the average of rin_wl and rout_wl.
+    rho_crit : float
+        Critical density of the universe at the redshift of the cluster.
+    msigmacrit : float
+        Mean inverse critical surface mass density.
+    fl : float
+        Second-order correction factor for weak lensing.
+
+    Parameters
+    ----------
+    redshift : float
+        Redshift of the galaxy cluster.
+    rin : numpy.ndarray, optional
+        Inner radii (in arcminutes) for the weak lensing bins.
+    rout : numpy.ndarray, optional
+        Outer radii (in arcminutes) for the weak lensing bins.
+    gplus : numpy.ndarray, optional
+        Mean tangential shear measurements.
+    err_gplus : numpy.ndarray, optional
+        Errors on the mean tangential shear measurements.
+    sigmacrit_inv : float, optional
+        Mean inverse critical surface mass density.
+    fl : float, optional
+        Second-order correction factor (default is None, assuming first-order correction).
+    cosmo : astropy.cosmology, optional
+        Cosmological model to be used (default is Planck15).
+    unit : str, optional
+        Specifies whether the distances are in 'proper' or 'comoving' units (default is 'proper').
+
+    Methods
+    -------
+    __init__ :
+        Initializes the WLData object and computes radial bin edges and other derived attributes.
+    """
+    
     def __init__(self, redshift, rin=None, rout=None, gplus=None, err_gplus=None,
                  sigmacrit_inv=None, fl=None, cosmo=None, unit='proper'):
 

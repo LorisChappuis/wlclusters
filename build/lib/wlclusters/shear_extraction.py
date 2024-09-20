@@ -13,21 +13,21 @@ def compute_tangential_shear_profile(sources, center, z_cl, bin_edges, dz, cosmo
     Compute the tangential shear profile around a cluster center, accounting for responsivity (R) in each bin.
 
     Args:
-    - sources (DataFrame): Source catalogue DataFrame containing columns for 'RA', 'Dec', 'e_1', 'e_2', and
+        sources (DataFrame): Source catalogue DataFrame containing columns for 'RA', 'Dec', 'e_1', 'e_2', and
                             optionally the weights, multiplicative bias, additive biases, and RMS ellipticity (e_rms).
-    - center (list): List containing the RA and Dec coordinates of the cluster center in degrees.
-    - z_cl (float): Redshift of the cluster.
-    - bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.
-    - dz (float, optional): Redshift offset for source selection. Defaults to 0.1.
-    - cosmo (Cosmology): Cosmology object for distance calculations.
-    - unit (str): Unit for distance calculation ('proper' or 'comoving'). Defaults to 'proper'.
-    - sigma_g (float, optional): The intrinsic shape noise per shear component. Defaults to 0.26.
+        center (list): List containing the RA and Dec coordinates of the cluster center in degrees.
+        z_cl (float): Redshift of the cluster.
+        bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.
+        dz (float, optional): Redshift offset for source selection. Defaults to 0.1.
+        cosmo (astropy.cosmology.Cosmology): Cosmology object for distance calculations.
+        unit (str): Unit for distance calculation ('proper' or 'comoving'). Defaults to 'proper'.
+        sigma_g (float, optional): The intrinsic shape noise per shear component. Defaults to 0.26.
 
     Returns:
-    - bin_edges_deg (ndarray): Array of bin edges in degrees.
-    - bin_mean (ndarray): Array of mean bin values in degrees.
-    - signal (ndarray): Array of shear signal values.
-    - errors (ndarray): Array of errors associated with each bin (including shape noise).
+        bin_edges_deg (ndarray): Array of bin edges in degrees.
+        bin_mean (ndarray): Array of mean bin values in degrees.
+        signal (ndarray): Array of shear signal values.
+        errors (ndarray): Array of errors associated with each bin (including shape noise).
     """
 
     if 'z_p' not in sources.columns:
@@ -88,7 +88,7 @@ def compute_tangential_shear_profile(sources, center, z_cl, bin_edges, dz, cosmo
                 e_rms = sources['e_rms'][mask]
                 R_i = 1 - np.sum(w[mask] * e_rms ** 2) / np.sum(w[mask])
             else:
-                R_i = 0.5  # Assume R=1 if not provided
+                R_i = 0.5  # Assume 2*R=1 if not provided
 
             # Compute weighted shear including multiplicative bias and responsivity
             weighted_shear = w[mask] * gamma_plus[mask] / (2 * R_i * (1 + m[mask]))
@@ -111,15 +111,15 @@ def return_sigmacrit(sources, center, z_cl, bin_edges, dz, cosmo, unit='proper')
     taking into account weights.
 
     Args:
-    - sources (DataFrame): Source catalogue DataFrame containing columns for 'RA', 'Dec', 'e_1', 'e_2', and 'weight'.
-    - center (list): List containing the RA and Dec coordinates of the cluster center in deg.
-    - z_cl (float): Redshift of the cluster.
-    - bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.
-    - dz (float, optional): Redshift offset for source selection. Defaults to 0.1.
+        sources (DataFrame): Source catalogue DataFrame containing columns for 'RA', 'Dec', 'e_1', 'e_2', and 'weight'.
+        center (list): List containing the RA and Dec coordinates of the cluster center in deg.
+        z_cl (float): Redshift of the cluster.
+        bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.
+        dz (float, optional): Redshift offset for source selection. Defaults to 0.1.
 
     Returns:
-    - mean_sigm_crit_inv (float): value of the inverse mean critical density <sigcrit**-1> in Mpc**2.Msun**-1.
-    - fl (float): value of <sigcrit**-2> / (<sigcrit**-1>**2), useful for 2nd order approximation of the shear.
+        mean_sigm_crit_inv (float): value of the inverse mean critical density <sigcrit**-1> in Mpc**2.Msun**-1.
+        fl (float): value of <sigcrit**-2> / (<sigcrit**-1>**2), useful for 2nd order approximation of the shear.
     """
 
     if unit == 'proper':
@@ -164,31 +164,46 @@ def return_sigmacrit(sources, center, z_cl, bin_edges, dz, cosmo, unit='proper')
 
 def shear_extraction(cluster_cat, sources, bin_edges, dz, cosmo, unit='proper', sources_denoised=None, lss=False, security_distance=1000):
     """
-    Iterates the shear extraction over all clusters of the given catalog.
+    Iterates the shear extraction over all clusters in the given catalog.
     Optionally computes the Large Scale Structure (LSS) covariance matrices.
 
-    Args:
-    - cluster_cat (DataFrame): Galaxy cluster catalog DataFrame containing columns for:
-        'RA', 'Dec'(position of the cluster)
-        'ID', (unique ID of the cluster)
-        'z_p' (redshift)
-    - sources (DataFrame): Source catalogue DataFrame containing columns for 'RA', 'Dec', 'e_1', and 'e_2'
-    - bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.
-    - dz (float, optional): Redshift offset for source selection. Defaults to 0.1.
-    - cosmo: cosmology initialized with astropy.cosmology
-    - unit (str, optional): Unit for distance calculation ('proper' or 'comoving'). Defaults to 'proper'.
-    - lss (bool, optional): Whether to compute the LSS covariance matrices. Defaults to False.
-    - security_distance (float, optional): Minimum distance from any cluster in kpc for LSS computation.
+    Parameters
+    ----------
+    cluster_cat : pandas.DataFrame
+        Galaxy cluster catalog DataFrame containing the following columns:
+        - 'RA', 'Dec': position of the cluster.
+        - 'ID': unique ID of the cluster.
+        - 'z_p': redshift of the cluster.
+    sources : pandas.DataFrame
+        Source catalogue DataFrame containing columns for 'RA', 'Dec', 'e_1', and 'e_2'.
+    bin_edges : array-like
+        Array containing the bin edges for radial profile calculation in Mpc.
+    dz : float, optional
+        Redshift offset for source selection. Defaults to 0.1.
+    cosmo : astropy.cosmology.Cosmology
+        Cosmology initialized with `astropy.cosmology`.
+    unit : str, optional
+        Unit for distance calculation ('proper' or 'comoving'). Defaults to 'proper'.
+    sources_denoised : pandas.DataFrame, optional
+        Denoised version of the source catalogue. Defaults to None.
+    lss : bool, optional
+        Whether to compute the LSS covariance matrices. Defaults to False.
+    security_distance : float, optional
+        Minimum distance from any cluster in kpc for LSS computation. Defaults to 1000.
 
-    Returns:
-    - shear_profiles: an astropy table containing the columns:
-        'ID': (unique ID of the cluster),
-        'rin', 'rout': the edges of each concentric bin in which the extraction was done, in arcmins,
-        'gplus': the mean tangential shear,
-        'errors': incertitude on the mean tangential shear,
-        'msci': value of the inverse mean critical density <sigcrit**-1> in Mpc**2.Msun**-1.
-        'fl': value of <sigcrit**-2> / (<sigcrit**-1>**2), useful for 2nd order approximation of the shear.
-    - covariance_table: (optional) Astropy table containing the covariance matrices for each cluster, if lss=True.
+    Returns
+    -------
+    shear_profiles : astropy.table.Table
+        Table containing the extracted shear profile data for each cluster. Columns include:
+        - 'ID': unique ID of the cluster.
+        - 'rin', 'rout': the edges of each concentric bin in which the extraction was done, in arcmins.
+        - 'gplus': the mean tangential shear.
+        - 'errors': uncertainty on the mean tangential shear.
+        - 'msci': value of the inverse mean critical density (<sigcrit**-1>) in Mpc².Msun⁻¹.
+        - 'fl': value of <sigcrit**-2> / (<sigcrit**-1>²), useful for second-order approximation of the shear.
+    covariance_table : astropy.table.Table, optional
+        Table containing the covariance matrices for each cluster, returned if `lss=True`.
+
     """
     profiles = []
     covariance_matrices = []
@@ -241,17 +256,17 @@ def extract_random_shear_profiles(z_cl, cluster_cat, sources, bin_edges, dz, cos
     Extract random shear profiles to estimate LSS covariance.
 
     Args:
-    - cluster_cat (DataFrame): Galaxy cluster catalog containing columns for 'RA', 'Dec', and 'z_p'.
-    - sources (DataFrame): Source catalogue with columns for 'RA', 'Dec', 'e_1', 'e_2', etc.
-    - bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.
-    - dz (float): Redshift offset for source selection.
-    - cosmo: Cosmology object for distance calculations.
-    - n_random (int): Number of random points to extract shear profiles from. Defaults to 100.
-    - security_distance (float): Minimum distance in kpc from known clusters to avoid. Defaults to 500 kpc.
-    - unit (str): Unit for distance calculation ('proper' or 'comoving'). Defaults to 'proper'.
+        cluster_cat (DataFrame): Galaxy cluster catalog containing columns for 'RA', 'Dec', and 'z_p'.
+        sources (DataFrame): Source catalogue with columns for 'RA', 'Dec', 'e_1', 'e_2', etc.
+        bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.
+        dz (float): Redshift offset for source selection.
+        cosmo (astropy.cosmology.Cosmology): Cosmology object for distance calculations.
+        n_random (int): Number of random points to extract shear profiles from. Defaults to 100.
+        security_distance (float): Minimum distance in kpc from known clusters to avoid. Defaults to 500 kpc.
+        unit (str): Unit for distance calculation ('proper' or 'comoving'). Defaults to 'proper'.
 
     Returns:
-    - random_shear_profiles: Astropy Table with random shear profiles.
+        random_shear_profiles: Astropy Table with random shear profiles.
     """
 
     random_profiles = []
@@ -307,12 +322,29 @@ def extract_random_shear_profiles(z_cl, cluster_cat, sources, bin_edges, dz, cos
     return random_shear_profiles
 
 
-def get_lss_cov_for_z(z_arr, cluster_cat, sources_denoised, bin_edges, dz, cosmo, n_random=100, unit='proper', security_distance=0.):
+def get_lss_cov_for_z(z_arr, cluster_cat, sources, bin_edges, dz, cosmo, n_random=100, unit='proper', security_distance=0.):
     # Use denoised sources for LSS covariance matrix computation
+    """
+    Computes the covariance matrices for each redshift of a given arrat of redshifts.
+
+    Args:
+        z_arr (array-like): Array containing the redshift values for which the covariance has to be estimated.
+        cluster_cat (DataFrame): Galaxy cluster catalog containing columns for 'RA', 'Dec', and 'z_p'.
+        sources (DataFrame): Source catalogue with columns for 'RA', 'Dec', 'e_1', 'e_2', etc.
+        bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.
+        dz (float): Redshift offset for source selection.
+        cosmo (astropy.cosmology.Cosmology): Cosmology object for distance calculations.
+        n_random (int): Number of random points to extract shear profiles from. Defaults to 100.
+        unit (str): Unit for distance calculation ('proper' or 'comoving'). Defaults to 'proper'.
+        security_distance (float): Minimum distance in kpc from known clusters to avoid. Defaults to 500 kpc.
+
+    Returns:
+        covariance_table: Astropy Table with covariance matrix for each redshift.
+    """
     covariance_matrices = []
 
     for z in tqdm(z_arr):
-        random_shear_profiles = extract_random_shear_profiles(z, cluster_cat, sources_denoised, bin_edges, dz, cosmo, n_random=n_random,
+        random_shear_profiles = extract_random_shear_profiles(z, cluster_cat, sources, bin_edges, dz, cosmo, n_random=n_random,
                                       security_distance=security_distance, unit=unit)
         n_bins = len(bin_edges) - 1
         covariance_matrix = get_lss_cov(random_shear_profiles, n_bins)

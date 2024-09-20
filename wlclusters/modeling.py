@@ -205,20 +205,27 @@ def WLmodel(WLdata, pmod):
     """
     PyMC (Theano) model for predicting the mean tangential shear profile for a given density profile at a specified redshift.
 
-    Args:
-    - WLdata (WLData): Object containing all the necessary information about the cluster. This includes:
-        - radii_wl: The radial bins for the weak lensing data.
-        - rho_crit: The critical density at the cluster's redshift.
-        - msigmacrit: Mean inverse critical surface mass density for the cluster.
-        - fl: Second-order correction factor for weak lensing measurements.
-    - pmod (list): List of parameters for the density profile model. For an NFW profile, this typically includes:
-        - cdelta: Concentration parameter.
-        - rdelta: Scale radius parameter.
+    Parameters
+    ----------
+    WLdata : WLData
+        Object containing all the necessary information about the cluster. This includes:
+        radii_wl : The radial bins for the weak lensing data.
+        rho_crit : The critical density at the cluster's redshift.
+        msigmacrit : Mean inverse critical surface mass density for the cluster.
+        fl : Second-order correction factor for weak lensing measurements.
+    pmod : list
+        List of parameters for the density profile model. For an NFW profile, this typically includes:
+        cdelta : Concentration parameter.
+        rdelta : Scale radius parameter.
 
-    Returns:
-    - gplus (ndarray): Predicted mean tangential shear profile at the input radii.
-    - rm (ndarray): Radii bins after applying interpolation or extrapolation through the function `get_radplus`.
-    - ev (ndarray): Indices of the input data radii points within the new radii array, `rm`.
+    Returns
+    -------
+    gplus : numpy.ndarray
+        Predicted mean tangential shear profile at the input radii.
+    rm : numpy.ndarray
+        Radii bins after applying interpolation or extrapolation through the function `get_radplus`.
+    ev : numpy.ndarray
+        Indices of the input data radii points within the new radii array, `rm`.
     """
     
     radplus, rm, ev = get_radplus(WLdata.radii_wl)
@@ -237,20 +244,27 @@ def WLmodel_np(WLdata, pmod):
     """
     Numpy model for predicting the mean tangential shear profile for a given density profile at a specified redshift.
 
-    Args:
-    - WLdata (WLData): Object containing all the necessary information about the cluster. This includes:
-        - radii_wl: The radial bins for the weak lensing data.
-        - rho_crit: The critical density at the cluster's redshift.
-        - msigmacrit: Mean inverse critical surface mass density for the cluster.
-        - fl: Second-order correction factor for weak lensing measurements.
-    - pmod (list): List of parameters for the density profile model. For an NFW profile, this typically includes:
-        - cdelta: Concentration parameter.
-        - rdelta: Scale radius parameter.
+    Parameters
+    ----------
+    WLdata : WLData
+        Object containing all the necessary information about the cluster. This includes:
+        radii_wl : The radial bins for the weak lensing data.
+        rho_crit : The critical density at the cluster's redshift.
+        msigmacrit : Mean inverse critical surface mass density for the cluster.
+        fl : Second-order correction factor for weak lensing measurements.
+    pmod : list
+        List of parameters for the density profile model. For an NFW profile, this typically includes:
+        cdelta : Concentration parameter.
+        rdelta : Scale radius parameter.
 
-    Returns:
-    - gplus (ndarray): Predicted mean tangential shear profile at the input radii.
-    - rm (ndarray): Radii bins after applying interpolation or extrapolation through the function `get_radplus`.
-    - ev (ndarray): Indices of the input data radii points within the new radii array, `rm`.
+    Returns
+    -------
+    gplus : numpy.ndarray
+        Predicted mean tangential shear profile at the input radii.
+    rm : numpy.ndarray
+        Radii bins after applying interpolation or extrapolation through the function `get_radplus`.
+    ev : numpy.ndarray
+        Indices of the input data radii points within the new radii array, `rm`.
     """
     radplus, rm, ev = get_radplus(WLdata.radii_wl)
     rho_out = rho_nfw_cr_np(radplus, pmod) * WLdata.rho_crit
@@ -265,30 +279,52 @@ class WLData:
     """
     A class to represent the weak lensing data for a galaxy cluster.
 
-    Attributes:
-    - gplus (ndarray): Mean tangential shear for the weak lensing data.
-    - err_gplus (ndarray): Error on the mean tangential shear.
-    - rin_wl (ndarray): Inner radial bin edges (in Mpc).
-    - rout_wl (ndarray): Outer radial bin edges (in Mpc).
-    - radii_wl (ndarray): Combined radial bin edges (inner + outer) for weak lensing data.
-    - rref_wl (ndarray): Reference radius for each radial bin, defined as the average of rin_wl and rout_wl.
-    - rho_crit (float): Critical density of the universe at the redshift of the cluster.
-    - msigmacrit (float): Mean inverse critical surface mass density.
-    - fl (float): Second-order correction factor for weak lensing.
+    Attributes
+    ----------
+    gplus : numpy.ndarray
+        Mean tangential shear for the weak lensing data.
+    err_gplus : numpy.ndarray
+        Error on the mean tangential shear.
+    rin_wl : numpy.ndarray
+        Inner radial bin edges (in Mpc).
+    rout_wl : numpy.ndarray
+        Outer radial bin edges (in Mpc).
+    radii_wl : numpy.ndarray
+        Combined radial bin edges (inner + outer) for weak lensing data.
+    rref_wl : numpy.ndarray
+        Reference radius for each radial bin, defined as the average of rin_wl and rout_wl.
+    rho_crit : float
+        Critical density of the universe at the redshift of the cluster.
+    msigmacrit : float
+        Mean inverse critical surface mass density.
+    fl : float
+        Second-order correction factor for weak lensing.
 
-    Args:
-    - redshift (float): Redshift of the galaxy cluster.
-    - rin (ndarray, optional): Inner radii (in arcminutes) for the weak lensing bins.
-    - rout (ndarray, optional): Outer radii (in arcminutes) for the weak lensing bins.
-    - gplus (ndarray, optional): Mean tangential shear measurements.
-    - err_gplus (ndarray, optional): Errors on the mean tangential shear measurements.
-    - sigmacrit_inv (float, optional): Mean inverse critical surface mass density.
-    - fl (float, optional): Second-order correction factor (default is None, assuming first-order correction).
-    - cosmo (astropy.cosmology, optional): Cosmological model to be used (default is Planck15).
-    - unit (str, optional): Specifies whether the distances are in 'proper' or 'comoving' units (default is 'proper').
+    Parameters
+    ----------
+    redshift : float
+        Redshift of the galaxy cluster.
+    rin : numpy.ndarray, optional
+        Inner radii (in arcminutes) for the weak lensing bins.
+    rout : numpy.ndarray, optional
+        Outer radii (in arcminutes) for the weak lensing bins.
+    gplus : numpy.ndarray, optional
+        Mean tangential shear measurements.
+    err_gplus : numpy.ndarray, optional
+        Errors on the mean tangential shear measurements.
+    sigmacrit_inv : float, optional
+        Mean inverse critical surface mass density.
+    fl : float, optional
+        Second-order correction factor (default is None, assuming first-order correction).
+    cosmo : astropy.cosmology, optional
+        Cosmological model to be used (default is Planck15).
+    unit : str, optional
+        Specifies whether the distances are in 'proper' or 'comoving' units (default is 'proper').
 
-    Methods:
-    - __init__: Initializes the WLData object and computes radial bin edges and other derived attributes.
+    Methods
+    -------
+    __init__ :
+        Initializes the WLData object and computes radial bin edges and other derived attributes.
     """
     
     def __init__(self, redshift, rin=None, rout=None, gplus=None, err_gplus=None,

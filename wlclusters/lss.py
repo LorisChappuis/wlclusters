@@ -5,13 +5,13 @@ def compute_shape_noise_error(sources, mask, sigma_g=0.26, use_weights=False):
     Compute the shape noise error for a given bin.
 
     Args:
-    - sources (DataFrame): Source catalogue DataFrame containing galaxy data.
-    - mask (ndarray): Boolean array indicating which sources are in the current bin.
-    - sigma_g (float, optional): The intrinsic shape noise per shear component. Defaults to 0.26.
-    - use_weights (bool, optional): Whether to use weights in the calculation. Defaults to False.
+        sources (DataFrame): Source catalogue DataFrame containing galaxy data.
+        mask (ndarray): Boolean array indicating which sources are in the current bin.
+        sigma_g (float, optional): The intrinsic shape noise per shear component. Defaults to 0.26.
+        use_weights (bool, optional): Whether to use weights in the calculation. Defaults to False.
 
     Returns:
-    - shape_noise_error (float): The shape noise error for the bin.
+        shape_noise_error (float): The shape noise error for the bin.
     """
     if np.sum(mask) == 0:
         return 0.0  # No galaxies in the bin, no error
@@ -38,12 +38,12 @@ def get_lss_cov(random_shear_profiles, n_bins):
     Compute the covariance matrix from random shear profiles.
 
     Args:
-    - random_shear_profiles (Table): Astropy Table containing the random shear profiles with columns:
-        'RA', 'Dec', 'rin', 'rout', 'gplus', 'errors', 'msci', 'fl'.
-    - n_bins (int): Number of radial bins used in the shear profile.
+        random_shear_profiles (Table): Astropy Table containing the random shear profiles with columns:
+            'RA', 'Dec', 'rin', 'rout', 'gplus', 'errors', 'msci', 'fl'.
+        n_bins (int): Number of radial bins used in the shear profile.
 
     Returns:
-    - covariance_matrix (ndarray): Covariance matrix of shape (n_bins, n_bins).
+        covariance_matrix (ndarray): Covariance matrix of shape (n_bins, n_bins).
     """
 
     # Extract the tangential shear profiles (gplus) from the random shear profiles
