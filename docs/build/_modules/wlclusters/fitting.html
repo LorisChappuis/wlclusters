@@ -265,23 +265,15 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Selects the appropriate covariance matrix based on the type of covariance specified.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">    -----------</span>
-<span class="sd">    covtype : str</span>
-<span class="sd">        The type of covariance matrix to use. Options are &#39;lss_cov&#39;, &#39;tot_cov&#39;, or &#39;None&#39;.</span>
-<span class="sd">    input_covmat : Table</span>
-<span class="sd">        The input covariance matrix table containing cluster IDs or redshifts.</span>
-<span class="sd">    clust_id : int</span>
-<span class="sd">        The ID of the current cluster.</span>
-<span class="sd">    clust_z : float</span>
-<span class="sd">        The redshift of the current cluster.</span>
-<span class="sd">    cluster_profiles : Table</span>
-<span class="sd">        Table containing the cluster shear profile information including statistical errors.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        covtype (str): The type of covariance matrix to use. Options are &#39;lss_cov&#39;, &#39;tot_cov&#39;, or &#39;None&#39;.</span>
+<span class="sd">        input_covmat (Table): The input covariance matrix table containing cluster IDs or redshifts.</span>
+<span class="sd">        clust_id (int): The ID of the current cluster.</span>
+<span class="sd">        clust_z (float): The redshift of the current cluster.</span>
+<span class="sd">        cluster_profiles (Table): Table containing the cluster shear profile information including statistical errors.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">    --------</span>
-<span class="sd">    np.ndarray</span>
-<span class="sd">        The selected covariance matrix.</span>
+<span class="sd">        np.ndarray: The selected covariance matrix.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">covtype</span> <span class="o">==</span> <span class="s1">&#39;lss_cov&#39;</span><span class="p">:</span>
         <span class="n">lss_cov</span> <span class="o">=</span> <span class="n">input_covmat</span>
@@ -307,19 +299,13 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Sets up the parameters for the NFW profile model based on the chosen parameterization by converting the user choice into cdelt and rdelt.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">    -----------</span>
-<span class="sd">    parnames : list</span>
-<span class="sd">        List of parameter names to be used in the model (e.g. [&#39;cdelt&#39;, &#39;rdelt&#39;], [&#39;cdelt&#39;, &#39;mdelt&#39;], etc.).</span>
-<span class="sd">    cosmo : Cosmology</span>
-<span class="sd">        The cosmology object to be used for calculations.</span>
-<span class="sd">    clust_z : float</span>
-<span class="sd">        The redshift of the current cluster.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        parnames (list): List of parameter names to be used in the model (e.g. [&#39;cdelt&#39;, &#39;rdelt&#39;], [&#39;cdelt&#39;, &#39;mdelt&#39;], etc.).</span>
+<span class="sd">        cosmo (astropy.cosmology.Cosmology): The cosmology object to be used for calculations.</span>
+<span class="sd">        clust_z (float):The redshift of the current cluster.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">    --------</span>
-<span class="sd">    list</span>
-<span class="sd">        List of parameters for the model.</span>
+<span class="sd">        list: List of parameters for the model.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">parnames</span> <span class="o">==</span> <span class="p">[</span><span class="s1">&#39;cdelt&#39;</span><span class="p">,</span> <span class="s1">&#39;rdelt&#39;</span><span class="p">]:</span>
         <span class="n">cdelt</span> <span class="o">=</span> <span class="n">pm</span><span class="o">.</span><span class="n">Uniform</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;cdelt&#39;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">10.</span><span class="p">)</span>
@@ -354,23 +340,15 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Performs forward modeling of weak lensing data using a specified NFW profile and PyMC.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">    -----------</span>
-<span class="sd">    wldata : WLData</span>
-<span class="sd">        The weak lensing data object.</span>
-<span class="sd">    parnames : list</span>
-<span class="sd">        List of parameter names (strings) to be used in the model.</span>
-<span class="sd">    cosmo : Cosmology</span>
-<span class="sd">        The cosmology object to be used for calculations.</span>
-<span class="sd">    clust_z : float</span>
-<span class="sd">        The redshift of the current cluster.</span>
-<span class="sd">    cov_mat : np.ndarray</span>
-<span class="sd">        Covariance matrix for the weak lensing data.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        wldata (class WLData): The weak lensing data object.</span>
+<span class="sd">        parnames (list): List of parameter names (strings) to be used in the model.</span>
+<span class="sd">        cosmo (astropy.cosmology.Cosmology): The cosmology object to be used for calculations.</span>
+<span class="sd">        clust_z (float): The redshift of the current cluster.</span>
+<span class="sd">        cov_mat (np.ndarray): Covariance matrix for the weak lensing data.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">    --------</span>
-<span class="sd">    trace : pymc5.backends.base.MultiTrace</span>
-<span class="sd">        The trace of the MCMC sampling process.</span>
+<span class="sd">        trace : pymc5.backends.base.MultiTrace, the trace of the MCMC sampling process.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">with</span> <span class="n">pm</span><span class="o">.</span><span class="n">Model</span><span class="p">()</span> <span class="k">as</span> <span class="n">model</span><span class="p">:</span>
         <span class="c1"># Setup parameters inside the model context</span>
@@ -392,23 +370,15 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Extracts the weak lensing modeling results, computing medians and percentiles for mass, radius, and concentration.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">    -----------</span>
-<span class="sd">    cluster_cat : Table</span>
-<span class="sd">        The catalog of clusters with ID and redshift information.</span>
-<span class="sd">    all_chains : Table</span>
-<span class="sd">        The posterior chains for concentration and radius/mass.</span>
-<span class="sd">    unit : str</span>
-<span class="sd">        The unit system to use (&#39;proper&#39; or &#39;comoving&#39;).</span>
-<span class="sd">    cosmo : Cosmology</span>
-<span class="sd">        The cosmology object to be used for calculations.</span>
-<span class="sd">    parnames : list</span>
-<span class="sd">        List of parameter names used in the model.</span>
+<span class="sd">    Args:</span>
+<span class="sd">    cluster_cat (Table): The catalog of clusters with ID and redshift information.</span>
+<span class="sd">    all_chains (Table): The posterior chains for concentration and radius/mass.</span>
+<span class="sd">    unit (str): The unit system to use (&#39;proper&#39; or &#39;comoving&#39;).</span>
+<span class="sd">    cosmo (astropy.cosmology.Cosmology): The cosmology object to be used for calculations.</span>
+<span class="sd">    parnames (list): List of parameter names used in the model.</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">    --------</span>
-<span class="sd">    Table</span>
-<span class="sd">        Table containing the extracted results for each cluster (m200, r200, c200).</span>
+<span class="sd">        Table: Table containing the extracted results for each cluster (m200, r200, c200).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">z_p</span> <span class="o">=</span> <span class="n">cluster_cat</span><span class="p">[</span><span class="s1">&#39;z_p&#39;</span><span class="p">]</span>
 
@@ -533,31 +503,19 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Executes the full weak lensing modeling pipeline for a catalog of clusters.</span>
 
-<span class="sd">    Parameters:</span>
-<span class="sd">    -----------</span>
-<span class="sd">    cluster_cat : Table</span>
-<span class="sd">        The catalog of clusters with ID and redshift information.</span>
-<span class="sd">    shear_profiles : Table</span>
-<span class="sd">        The shear profiles for each cluster, containing gplus and error data.</span>
-<span class="sd">    cosmo : Cosmology</span>
-<span class="sd">        The cosmology object to be used for calculations.</span>
-<span class="sd">    covtype : str, optional</span>
-<span class="sd">        The type of covariance matrix to use (&#39;lss_cov&#39;, &#39;tot_cov&#39;, or &#39;None&#39;). Default is &#39;None&#39;.</span>
-<span class="sd">    input_covmat : Table, optional</span>
-<span class="sd">        Input covariance matrix table if applicable.</span>
-<span class="sd">    unit : str, optional</span>
-<span class="sd">        Unit system to use (&#39;proper&#39; or &#39;comoving&#39;). Default is &#39;proper&#39;.</span>
-<span class="sd">    ndraws : int, optional</span>
-<span class="sd">        Number of draws for MCMC sampling. Default is 2000.</span>
-<span class="sd">    ntune : int, optional</span>
-<span class="sd">        Number of tuning steps for MCMC. Default is 1000.</span>
-<span class="sd">    parnames : list, optional</span>
-<span class="sd">        List of parameter names used for modeling. Default is [&#39;cdelt&#39;, &#39;rdelt&#39;].</span>
+<span class="sd">    Args:</span>
+<span class="sd">        cluster_cat (Table): The catalog of clusters with ID and redshift information.</span>
+<span class="sd">        shear_profiles (Table): The shear profiles for each cluster, containing gplus and error data.</span>
+<span class="sd">        cosmo (astropy.cosmology.Cosmology): The cosmology object to be used for calculations.</span>
+<span class="sd">        covtype (str): optional, the type of covariance matrix to use (&#39;lss_cov&#39;, &#39;tot_cov&#39;, or &#39;None&#39;). Default is &#39;None&#39;.</span>
+<span class="sd">        input_covmat (Table): optional, input covariance matrix table if applicable.</span>
+<span class="sd">        unit (str): optional, unit system to use (&#39;proper&#39; or &#39;comoving&#39;). Default is &#39;proper&#39;.</span>
+<span class="sd">        ndraws (int): optional, number of draws for MCMC sampling. Default is 2000.</span>
+<span class="sd">        ntune (int): optional, number of tuning steps for MCMC. Default is 1000.</span>
+<span class="sd">        parnames (list): optional, list of parameter names used for modeling. Default is [&#39;cdelt&#39;, &#39;rdelt&#39;].</span>
 
 <span class="sd">    Returns:</span>
-<span class="sd">    --------</span>
-<span class="sd">    Table</span>
-<span class="sd">        Table containing the posterior chains and the extracted results for each cluster.</span>
+<span class="sd">        Table: Table containing the posterior chains and the extracted results for each cluster.</span>
 <span class="sd">    &quot;&quot;&quot;</span>    
     <span class="n">all_c200_chains</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">all_r200_chains</span> <span class="o">=</span> <span class="p">[]</span>

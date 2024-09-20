@@ -12,23 +12,15 @@ def select_covariance(covtype, input_covmat, clust_id, clust_z, cluster_profiles
     """
     Selects the appropriate covariance matrix based on the type of covariance specified.
 
-    Parameters:
-    -----------
-    covtype : str
-        The type of covariance matrix to use. Options are 'lss_cov', 'tot_cov', or 'None'.
-    input_covmat : Table
-        The input covariance matrix table containing cluster IDs or redshifts.
-    clust_id : int
-        The ID of the current cluster.
-    clust_z : float
-        The redshift of the current cluster.
-    cluster_profiles : Table
-        Table containing the cluster shear profile information including statistical errors.
+    Args:
+        covtype (str): The type of covariance matrix to use. Options are 'lss_cov', 'tot_cov', or 'None'.
+        input_covmat (Table): The input covariance matrix table containing cluster IDs or redshifts.
+        clust_id (int): The ID of the current cluster.
+        clust_z (float): The redshift of the current cluster.
+        cluster_profiles (Table): Table containing the cluster shear profile information including statistical errors.
 
     Returns:
-    --------
-    np.ndarray
-        The selected covariance matrix.
+        np.ndarray: The selected covariance matrix.
     """
     if covtype == 'lss_cov':
         lss_cov = input_covmat
@@ -51,19 +43,13 @@ def setup_parameters(parnames, cosmo, clust_z):
     """
     Sets up the parameters for the NFW profile model based on the chosen parameterization by converting the user choice into cdelt and rdelt.
 
-    Parameters:
-    -----------
-    parnames : list
-        List of parameter names to be used in the model (e.g. ['cdelt', 'rdelt'], ['cdelt', 'mdelt'], etc.).
-    cosmo : Cosmology
-        The cosmology object to be used for calculations.
-    clust_z : float
-        The redshift of the current cluster.
+    Args:
+        parnames (list): List of parameter names to be used in the model (e.g. ['cdelt', 'rdelt'], ['cdelt', 'mdelt'], etc.).
+        cosmo (astropy.cosmology.Cosmology): The cosmology object to be used for calculations.
+        clust_z (float):The redshift of the current cluster.
 
     Returns:
-    --------
-    list
-        List of parameters for the model.
+        list: List of parameters for the model.
     """
     if parnames == ['cdelt', 'rdelt']:
         cdelt = pm.Uniform(name='cdelt', lower=1., upper=10.)
@@ -95,23 +81,15 @@ def forward_model(wldata, parnames, cosmo, clust_z, cov_mat):
     """
     Performs forward modeling of weak lensing data using a specified NFW profile and PyMC.
 
-    Parameters:
-    -----------
-    wldata : WLData
-        The weak lensing data object.
-    parnames : list
-        List of parameter names (strings) to be used in the model.
-    cosmo : Cosmology
-        The cosmology object to be used for calculations.
-    clust_z : float
-        The redshift of the current cluster.
-    cov_mat : np.ndarray
-        Covariance matrix for the weak lensing data.
+    Args:
+        wldata (class WLData): The weak lensing data object.
+        parnames (list): List of parameter names (strings) to be used in the model.
+        cosmo (astropy.cosmology.Cosmology): The cosmology object to be used for calculations.
+        clust_z (float): The redshift of the current cluster.
+        cov_mat (np.ndarray): Covariance matrix for the weak lensing data.
 
     Returns:
-    --------
-    trace : pymc5.backends.base.MultiTrace
-        The trace of the MCMC sampling process.
+        trace : pymc5.backends.base.MultiTrace, the trace of the MCMC sampling process.
     """
     with pm.Model() as model:
         # Setup parameters inside the model context
@@ -130,23 +108,15 @@ def extract_results(cluster_cat, all_chains, unit, cosmo, parnames):
     """
     Extracts the weak lensing modeling results, computing medians and percentiles for mass, radius, and concentration.
 
-    Parameters:
-    -----------
-    cluster_cat : Table
-        The catalog of clusters with ID and redshift information.
-    all_chains : Table
-        The posterior chains for concentration and radius/mass.
-    unit : str
-        The unit system to use ('proper' or 'comoving').
-    cosmo : Cosmology
-        The cosmology object to be used for calculations.
-    parnames : list
-        List of parameter names used in the model.
+    Args:
+    cluster_cat (Table): The catalog of clusters with ID and redshift information.
+    all_chains (Table): The posterior chains for concentration and radius/mass.
+    unit (str): The unit system to use ('proper' or 'comoving').
+    cosmo (astropy.cosmology.Cosmology): The cosmology object to be used for calculations.
+    parnames (list): List of parameter names used in the model.
 
     Returns:
-    --------
-    Table
-        Table containing the extracted results for each cluster (m200, r200, c200).
+        Table: Table containing the extracted results for each cluster (m200, r200, c200).
     """
     z_p = cluster_cat['z_p']
 
@@ -268,31 +238,19 @@ def run(cluster_cat, shear_profiles, cosmo, covtype='None', input_covmat=None, u
     """
     Executes the full weak lensing modeling pipeline for a catalog of clusters.
 
-    Parameters:
-    -----------
-    cluster_cat : Table
-        The catalog of clusters with ID and redshift information.
-    shear_profiles : Table
-        The shear profiles for each cluster, containing gplus and error data.
-    cosmo : Cosmology
-        The cosmology object to be used for calculations.
-    covtype : str, optional
-        The type of covariance matrix to use ('lss_cov', 'tot_cov', or 'None'). Default is 'None'.
-    input_covmat : Table, optional
-        Input covariance matrix table if applicable.
-    unit : str, optional
-        Unit system to use ('proper' or 'comoving'). Default is 'proper'.
-    ndraws : int, optional
-        Number of draws for MCMC sampling. Default is 2000.
-    ntune : int, optional
-        Number of tuning steps for MCMC. Default is 1000.
-    parnames : list, optional
-        List of parameter names used for modeling. Default is ['cdelt', 'rdelt'].
+    Args:
+        cluster_cat (Table): The catalog of clusters with ID and redshift information.
+        shear_profiles (Table): The shear profiles for each cluster, containing gplus and error data.
+        cosmo (astropy.cosmology.Cosmology): The cosmology object to be used for calculations.
+        covtype (str): optional, the type of covariance matrix to use ('lss_cov', 'tot_cov', or 'None'). Default is 'None'.
+        input_covmat (Table): optional, input covariance matrix table if applicable.
+        unit (str): optional, unit system to use ('proper' or 'comoving'). Default is 'proper'.
+        ndraws (int): optional, number of draws for MCMC sampling. Default is 2000.
+        ntune (int): optional, number of tuning steps for MCMC. Default is 1000.
+        parnames (list): optional, list of parameter names used for modeling. Default is ['cdelt', 'rdelt'].
 
     Returns:
-    --------
-    Table
-        Table containing the posterior chains and the extracted results for each cluster.
+        Table: Table containing the posterior chains and the extracted results for each cluster.
     """    
     all_c200_chains = []
     all_r200_chains = []

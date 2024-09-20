@@ -259,28 +259,20 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    A class to handle the deprojection of volumes for spherical shells.</span>
 
-<span class="sd">    Attributes</span>
-<span class="sd">    ----------</span>
-<span class="sd">    radin : numpy.ndarray</span>
-<span class="sd">        Array of inner radii for the shells.</span>
-<span class="sd">    radot : numpy.ndarray</span>
-<span class="sd">        Array of outer radii for the shells.</span>
+<span class="sd">    Attributes:</span>
+<span class="sd">        radin (numpy.ndarray): Array of inner radii for the shells.</span>
+<span class="sd">        radot (numpy.ndarray): Array of outer radii for the shells.</span>
 
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    deproj_vol()</span>
-<span class="sd">        Computes the deprojected volume matrix for the given radii.</span>
+<span class="sd">    Methods:</span>
+<span class="sd">        deproj_vol(): Computes the deprojected volume matrix for the given radii.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">radin</span><span class="p">,</span> <span class="n">radot</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Initialize the MyDeprojVol class with inner and outer radii.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        radin : numpy.ndarray</span>
-<span class="sd">            Array of inner radii for the shells.</span>
-<span class="sd">        radot : numpy.ndarray</span>
-<span class="sd">            Array of outer radii for the shells.</span>
+<span class="sd">        Args:</span>
+<span class="sd">            radin (numpy.ndarray): Array of inner radii for the shells.</span>
+<span class="sd">            radot (numpy.ndarray): Array of outer radii for the shells.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">radin</span> <span class="o">=</span> <span class="n">radin</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">radot</span> <span class="o">=</span> <span class="n">radot</span>
@@ -291,26 +283,22 @@ document.write(`
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Calculate the deprojected volume matrix for spherical shells.</span>
 
-<span class="sd">        This method performs a deprojection of volumes for given inner (`radin`)</span>
-<span class="sd">        and outer (`radot`) radii, adjusting for any discrepancies between </span>
-<span class="sd">        adjacent radii and ensuring consistent volume calculations for each shell.</span>
+<span class="sd">        This method performs a deprojection of volumes for the given inner (`radin`)</span>
+<span class="sd">        and outer (`radot`) radii. It adjusts for discrepancies between adjacent radii </span>
+<span class="sd">        and ensures consistent volume calculations for each shell.</span>
 
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        numpy.ndarray</span>
-<span class="sd">            A matrix where each element [i, j] represents the deprojected volume </span>
-<span class="sd">            of the j-th shell inside the i-th ring.</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            numpy.ndarray: A matrix where each element [i, j] represents the deprojected </span>
+<span class="sd">            volume of the j-th shell inside the i-th ring.</span>
 
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        - The method first checks for discrepancies between adjacent radii and fixes them if necessary.</span>
-<span class="sd">        - A warning is printed if the discrepancies exceed a 0.1% threshold.</span>
-<span class="sd">        - The volume matrix is then computed using the provided inner and outer radii.</span>
+<span class="sd">        Notes:</span>
+<span class="sd">            - The method first checks for discrepancies between adjacent radii and fixes </span>
+<span class="sd">              them if necessary.</span>
+<span class="sd">            - A warning is printed if the discrepancies exceed a 0.1% threshold.</span>
+<span class="sd">            - The volume matrix is then computed using the provided inner and outer radii.</span>
 
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">        SystemExit</span>
-<span class="sd">            If any computed volume element is negative, the program will exit.</span>
+<span class="sd">        Raises:</span>
+<span class="sd">            SystemExit: If any computed volume element is negative, the program will exit.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">ri</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">radin</span><span class="p">)</span>
         <span class="n">ro</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">radot</span><span class="p">)</span>

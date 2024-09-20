@@ -1,0 +1,12 @@
+#docs/build/*
+#!docs/build/**/*.html
+
+# Ignore specific directories you don't want to track
+#docs/build/source/
+#docs/build/_modules/
+#docs/build/_sources/
+#docs/build/_static/
+#docs/build/.doctrees/
+
+docs/*
+!docs/*.html

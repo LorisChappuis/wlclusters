@@ -312,7 +312,7 @@ document.write(`
 <dl class="py function">
 <dt class="sig sig-object py" id="wlclusters.utils.find_closest_redshift">
 <span class="sig-prename descclassname"><span class="pre">wlclusters.utils.</span></span><span class="sig-name descname"><span class="pre">find_closest_redshift</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_arr</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/utils.html#find_closest_redshift"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.utils.find_closest_redshift" title="Link to this definition">#</a></dt>
-<dd><p>Find the closest redshift in a given array of redshifts to a target redshift.</p>
+<dd><p>Find the closest redshift to a target value in a given array of redshifts.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -338,8 +338,8 @@ document.write(`
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>m</strong> (<em>float</em>) – The mass <cite>m_delta</cite> in solar masses.</p></li>
 <li><p><strong>z</strong> (<em>float</em>) – The redshift of the cluster.</p></li>
-<li><p><strong>cosmo</strong> (<em>astropy.cosmology.Cosmology</em>) – The cosmology object used for calculations (e.g., Planck15).</p></li>
-<li><p><strong>delta</strong> (<em>float</em><em>, </em><em>optional</em>) – The overdensity factor (default is 200, for <cite>m200</cite>).</p></li>
+<li><p><strong>cosmo</strong> (<em>astropy.cosmology.Cosmology</em>) – Cosmology object used for calculations (e.g., Planck15).</p></li>
+<li><p><strong>delta</strong> (<em>float</em><em>, </em><em>optional</em>) – Overdensity factor (default is 200, corresponding to <cite>m200</cite>).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -360,8 +360,8 @@ document.write(`
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>r</strong> (<em>float</em>) – The radius <cite>r_delta</cite> in kpc.</p></li>
 <li><p><strong>z</strong> (<em>float</em>) – The redshift of the cluster.</p></li>
-<li><p><strong>cosmo</strong> (<em>astropy.cosmology.Cosmology</em>) – The cosmology object used for calculations (e.g., Planck15).</p></li>
-<li><p><strong>delta</strong> (<em>float</em><em>, </em><em>optional</em>) – The overdensity factor (default is 200, for <cite>r200</cite>).</p></li>
+<li><p><strong>cosmo</strong> (<em>astropy.cosmology.Cosmology</em>) – Cosmology object used for calculations (e.g., Planck15).</p></li>
+<li><p><strong>delta</strong> (<em>float</em><em>, </em><em>optional</em>) – Overdensity factor (default is 200, corresponding to <cite>r200</cite>).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>

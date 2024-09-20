@@ -359,13 +359,13 @@ document.write(`
 <dt class="sig sig-object py" id="id0">
 <span class="sig-name descname"><span class="pre">deproj_vol</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/deproject.html#MyDeprojVol.deproj_vol"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id0" title="Link to this definition">#</a></dt>
 <dd><p>Calculate the deprojected volume matrix for spherical shells.</p>
-<p>This method performs a deprojection of volumes for given inner (<cite>radin</cite>)
-and outer (<cite>radot</cite>) radii, adjusting for any discrepancies between
-adjacent radii and ensuring consistent volume calculations for each shell.</p>
+<p>This method performs a deprojection of volumes for the given inner (<cite>radin</cite>)
+and outer (<cite>radot</cite>) radii. It adjusts for discrepancies between adjacent radii
+and ensures consistent volume calculations for each shell.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A matrix where each element [i, j] represents the deprojected volume
-of the j-th shell inside the i-th ring.</p>
+<dd class="field-odd"><p>A matrix where each element [i, j] represents the deprojected
+volume of the j-th shell inside the i-th ring.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>numpy.ndarray</p>
@@ -373,7 +373,8 @@ of the j-th shell inside the i-th ring.</p>
 </dl>
 <p class="rubric">Notes</p>
 <ul class="simple">
-<li><p>The method first checks for discrepancies between adjacent radii and fixes them if necessary.</p></li>
+<li><p>The method first checks for discrepancies between adjacent radii and fixes
+them if necessary.</p></li>
 <li><p>A warning is printed if the discrepancies exceed a 0.1% threshold.</p></li>
 <li><p>The volume matrix is then computed using the provided inner and outer radii.</p></li>
 </ul>

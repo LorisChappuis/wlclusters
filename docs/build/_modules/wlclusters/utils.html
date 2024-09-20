@@ -257,19 +257,14 @@ document.write(`
 <a class="viewcode-back" href="../../wlclusters.utils.html#wlclusters.utils.find_closest_redshift">[docs]</a>
 <span class="k">def</span> <span class="nf">find_closest_redshift</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">z_arr</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Find the closest redshift in a given array of redshifts to a target redshift.</span>
+<span class="sd">    Find the closest redshift to a target value in a given array of redshifts.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    z : float</span>
-<span class="sd">        The target redshift value.</span>
-<span class="sd">    z_arr : numpy.ndarray</span>
-<span class="sd">        An array of redshift values to search from.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        z (float): The target redshift value.</span>
+<span class="sd">        z_arr (numpy.ndarray): An array of redshift values to search from.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    float</span>
-<span class="sd">        The redshift value in `z_arr` that is closest to the target redshift `z`.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        float: The redshift value in `z_arr` that is closest to the target redshift `z`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">z_arr</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">z_arr</span> <span class="o">-</span> <span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">argmin</span><span class="p">()]</span></div>
 
@@ -281,21 +276,14 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert radius `r_delta` to mass `m_delta` for a given redshift and cosmology.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    r : float</span>
-<span class="sd">        The radius `r_delta` in kpc.</span>
-<span class="sd">    z : float</span>
-<span class="sd">        The redshift of the cluster.</span>
-<span class="sd">    cosmo : astropy.cosmology.Cosmology</span>
-<span class="sd">        The cosmology object used for calculations (e.g., Planck15).</span>
-<span class="sd">    delta : float, optional</span>
-<span class="sd">        The overdensity factor (default is 200, for `r200`).</span>
+<span class="sd">    Args:</span>
+<span class="sd">        r (float): The radius `r_delta` in kpc.</span>
+<span class="sd">        z (float): The redshift of the cluster.</span>
+<span class="sd">        cosmo (astropy.cosmology.Cosmology): Cosmology object used for calculations (e.g., Planck15).</span>
+<span class="sd">        delta (float, optional): Overdensity factor (default is 200, corresponding to `r200`).</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    float</span>
-<span class="sd">        The mass `m_delta` corresponding to the given radius `r_delta` at redshift `z` and overdensity `delta`.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        float: The mass `m_delta` corresponding to the given radius `r_delta` at redshift `z` and overdensity `delta`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rhoc</span> <span class="o">=</span> <span class="n">cosmo</span><span class="o">.</span><span class="n">critical_density</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">M_sun</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">kpc</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
     <span class="k">return</span> <span class="p">(</span><span class="mi">4</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">rhoc</span> <span class="o">*</span> <span class="n">r</span><span class="o">**</span><span class="mi">3</span></div>
@@ -307,21 +295,14 @@ document.write(`
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert mass `m_delta` to radius `r_delta` for a given redshift and cosmology.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    m : float</span>
-<span class="sd">        The mass `m_delta` in solar masses.</span>
-<span class="sd">    z : float</span>
-<span class="sd">        The redshift of the cluster.</span>
-<span class="sd">    cosmo : astropy.cosmology.Cosmology</span>
-<span class="sd">        The cosmology object used for calculations (e.g., Planck15).</span>
-<span class="sd">    delta : float, optional</span>
-<span class="sd">        The overdensity factor (default is 200, for `m200`).</span>
+<span class="sd">    Args:</span>
+<span class="sd">        m (float): The mass `m_delta` in solar masses.</span>
+<span class="sd">        z (float): The redshift of the cluster.</span>
+<span class="sd">        cosmo (astropy.cosmology.Cosmology): Cosmology object used for calculations (e.g., Planck15).</span>
+<span class="sd">        delta (float, optional): Overdensity factor (default is 200, corresponding to `m200`).</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    float</span>
-<span class="sd">        The radius `r_delta` corresponding to the given mass `m_delta` at redshift `z` and overdensity `delta`.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        float: The radius `r_delta` corresponding to the given mass `m_delta` at redshift `z` and overdensity `delta`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">rhoc</span> <span class="o">=</span> <span class="n">cosmo</span><span class="o">.</span><span class="n">critical_density</span><span class="p">(</span><span class="n">z</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">M_sun</span> <span class="o">*</span> <span class="n">u</span><span class="o">.</span><span class="n">kpc</span><span class="o">**-</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">m</span> <span class="o">/</span> <span class="p">((</span><span class="mi">4</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">rhoc</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span></div>
