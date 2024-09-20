@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>wlclusters.shear_extraction module &#8212; wlclusters 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=8d563738"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-wlclusters.shear_extraction">
+<span id="wlclusters-shear-extraction-module"></span><h1>wlclusters.shear_extraction module<a class="headerlink" href="#module-wlclusters.shear_extraction" title="Link to this heading">¶</a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.shear_extraction.compute_tangential_shear_profile">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.shear_extraction.</span></span><span class="sig-name descname"><span class="pre">compute_tangential_shear_profile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sources</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_edges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'proper'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_g</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.26</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/shear_extraction.html#compute_tangential_shear_profile"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.shear_extraction.compute_tangential_shear_profile" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the tangential shear profile around a cluster center, accounting for responsivity (R) in each bin.</p>
+<p>Args:
+- sources (DataFrame): Source catalogue DataFrame containing columns for ‘RA’, ‘Dec’, ‘e_1’, ‘e_2’, and</p>
+<blockquote>
+<div><p>optionally the weights, multiplicative bias, additive biases, and RMS ellipticity (e_rms).</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>center (list): List containing the RA and Dec coordinates of the cluster center in degrees.</p></li>
+<li><p>z_cl (float): Redshift of the cluster.</p></li>
+<li><p>bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.</p></li>
+<li><p>dz (float, optional): Redshift offset for source selection. Defaults to 0.1.</p></li>
+<li><p>cosmo (Cosmology): Cosmology object for distance calculations.</p></li>
+<li><p>unit (str): Unit for distance calculation (‘proper’ or ‘comoving’). Defaults to ‘proper’.</p></li>
+<li><p>sigma_g (float, optional): The intrinsic shape noise per shear component. Defaults to 0.26.</p></li>
+</ul>
+<p>Returns:
+- bin_edges_deg (ndarray): Array of bin edges in degrees.
+- bin_mean (ndarray): Array of mean bin values in degrees.
+- signal (ndarray): Array of shear signal values.
+- errors (ndarray): Array of errors associated with each bin (including shape noise).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.shear_extraction.extract_random_shear_profiles">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.shear_extraction.</span></span><span class="sig-name descname"><span class="pre">extract_random_shear_profiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_cat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sources</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_edges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">security_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'proper'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/shear_extraction.html#extract_random_shear_profiles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.shear_extraction.extract_random_shear_profiles" title="Link to this definition">¶</a></dt>
+<dd><p>Extract random shear profiles to estimate LSS covariance.</p>
+<p>Args:
+- cluster_cat (DataFrame): Galaxy cluster catalog containing columns for ‘RA’, ‘Dec’, and ‘z_p’.
+- sources (DataFrame): Source catalogue with columns for ‘RA’, ‘Dec’, ‘e_1’, ‘e_2’, etc.
+- bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.
+- dz (float): Redshift offset for source selection.
+- cosmo: Cosmology object for distance calculations.
+- n_random (int): Number of random points to extract shear profiles from. Defaults to 100.
+- security_distance (float): Minimum distance in kpc from known clusters to avoid. Defaults to 500 kpc.
+- unit (str): Unit for distance calculation (‘proper’ or ‘comoving’). Defaults to ‘proper’.</p>
+<p>Returns:
+- random_shear_profiles: Astropy Table with random shear profiles.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.shear_extraction.get_lss_cov_for_z">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.shear_extraction.</span></span><span class="sig-name descname"><span class="pre">get_lss_cov_for_z</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">z_arr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cluster_cat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sources_denoised</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_edges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'proper'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">security_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/shear_extraction.html#get_lss_cov_for_z"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.shear_extraction.get_lss_cov_for_z" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.shear_extraction.return_sigmacrit">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.shear_extraction.</span></span><span class="sig-name descname"><span class="pre">return_sigmacrit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sources</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z_cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_edges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'proper'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/shear_extraction.html#return_sigmacrit"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.shear_extraction.return_sigmacrit" title="Link to this definition">¶</a></dt>
+<dd><p>Compute the inverse mean critical density over the whole radial range around the cluster,
+taking into account weights.</p>
+<p>Args:
+- sources (DataFrame): Source catalogue DataFrame containing columns for ‘RA’, ‘Dec’, ‘e_1’, ‘e_2’, and ‘weight’.
+- center (list): List containing the RA and Dec coordinates of the cluster center in deg.
+- z_cl (float): Redshift of the cluster.
+- bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.
+- dz (float, optional): Redshift offset for source selection. Defaults to 0.1.</p>
+<p>Returns:
+- mean_sigm_crit_inv (float): value of the inverse mean critical density &lt;sigcrit**-1&gt; in Mpc**2.Msun**-1.
+- fl (float): value of &lt;sigcrit**-2&gt; / (&lt;sigcrit**-1&gt;**2), useful for 2nd order approximation of the shear.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.shear_extraction.shear_extraction">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.shear_extraction.</span></span><span class="sig-name descname"><span class="pre">shear_extraction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cluster_cat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sources</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bin_edges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmo</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'proper'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sources_denoised</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lss</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">security_distance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/shear_extraction.html#shear_extraction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.shear_extraction.shear_extraction" title="Link to this definition">¶</a></dt>
+<dd><p>Iterates the shear extraction over all clusters of the given catalog.
+Optionally computes the Large Scale Structure (LSS) covariance matrices.</p>
+<p>Args:
+- cluster_cat (DataFrame): Galaxy cluster catalog DataFrame containing columns for:</p>
+<blockquote>
+<div><p>‘RA’, ‘Dec’(position of the cluster)
+‘ID’, (unique ID of the cluster)
+‘z_p’ (redshift)</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>sources (DataFrame): Source catalogue DataFrame containing columns for ‘RA’, ‘Dec’, ‘e_1’, and ‘e_2’</p></li>
+<li><p>bin_edges (array-like): Array containing the bin edges for radial profile calculation in Mpc.</p></li>
+<li><p>dz (float, optional): Redshift offset for source selection. Defaults to 0.1.</p></li>
+<li><p>cosmo: cosmology initialized with astropy.cosmology</p></li>
+<li><p>unit (str, optional): Unit for distance calculation (‘proper’ or ‘comoving’). Defaults to ‘proper’.</p></li>
+<li><p>lss (bool, optional): Whether to compute the LSS covariance matrices. Defaults to False.</p></li>
+<li><p>security_distance (float, optional): Minimum distance from any cluster in kpc for LSS computation.</p></li>
+</ul>
+<p>Returns:
+- shear_profiles: an astropy table containing the columns:</p>
+<blockquote>
+<div><p>‘ID’: (unique ID of the cluster),
+‘rin’, ‘rout’: the edges of each concentric bin in which the extraction was done, in arcmins,
+‘gplus’: the mean tangential shear,
+‘errors’: incertitude on the mean tangential shear,
+‘msci’: value of the inverse mean critical density &lt;sigcrit**-1&gt; in Mpc**2.Msun**-1.
+‘fl’: value of &lt;sigcrit**-2&gt; / (&lt;sigcrit**-1&gt;**2), useful for 2nd order approximation of the shear.</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>covariance_table: (optional) Astropy table containing the covariance matrices for each cluster, if lss=True.</p></li>
+</ul>
+</dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">wlclusters</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Loris Chappuis.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/wlclusters.shear_extraction.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

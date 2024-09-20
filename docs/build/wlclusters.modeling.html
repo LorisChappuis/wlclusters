@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="./">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>wlclusters.modeling module &#8212; wlclusters 1.0.0 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d1102ebc" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css?v=12dfc556" />
+    <script src="_static/documentation_options.js?v=8d563738"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="module-wlclusters.modeling">
+<span id="wlclusters-modeling-module"></span><h1>wlclusters.modeling module<a class="headerlink" href="#module-wlclusters.modeling" title="Link to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="wlclusters.modeling.WLData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">wlclusters.modeling.</span></span><span class="sig-name descname"><span class="pre">WLData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">redshift</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gplus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">err_gplus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigmacrit_inv</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosmo</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'proper'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/modeling.html#WLData"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.modeling.WLData" title="Link to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class is initialized for each cluster in the catalog
+:type cosmo: astropy.cosmology</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.modeling.WLmodel">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.modeling.</span></span><span class="sig-name descname"><span class="pre">WLmodel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">WLdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pmod</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/modeling.html#WLmodel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.modeling.WLmodel" title="Link to this definition">¶</a></dt>
+<dd><p>Modeling of the mean tangential shear for a given density profile at a given redshift</p>
+<blockquote>
+<div><p>Args:
+- WLdata: class containing all the useful informations about the cluster (radii binning, redshift, msci, fl..)
+- pmod: list containing the density profile parameters values, in the case NFW, cdelta and rdelta</p>
+<p>Returns:
+- gplus: predicted mean tangential shear profile
+- rm: radii bins after inter/extra-polation by the function get_radplus
+- ev: indices of the input data radii points within rm, i.e. the radii binning given in input is rm[ev]</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.modeling.WLmodel_np">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.modeling.</span></span><span class="sig-name descname"><span class="pre">WLmodel_np</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">WLdata</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pmod</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/modeling.html#WLmodel_np"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.modeling.WLmodel_np" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.modeling.dsigma_trap">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.modeling.</span></span><span class="sig-name descname"><span class="pre">dsigma_trap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radii</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/modeling.html#dsigma_trap"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.modeling.dsigma_trap" title="Link to this definition">¶</a></dt>
+<dd><p>computes Delta Sigma using numerical trapezoidal intergration</p>
+<blockquote>
+<div><p>Args:
+- sigma: projected surface mass density
+- radii</p>
+<p>Returns:
+- Delta Sigma</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.modeling.dsigma_trap_np">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.modeling.</span></span><span class="sig-name descname"><span class="pre">dsigma_trap_np</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">radii</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/modeling.html#dsigma_trap_np"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.modeling.dsigma_trap_np" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.modeling.get_radplus">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.modeling.</span></span><span class="sig-name descname"><span class="pre">get_radplus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nptplus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">19</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/modeling.html#get_radplus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.modeling.get_radplus" title="Link to this definition">¶</a></dt>
+<dd><p>for the numericat integration to be successful, it is useful to create a set of fictive points at low radii aswell
+as between each data point</p>
+<blockquote>
+<div><p>Args:
+- radii: input radii of the data points
+- dsigma: Delta Sigma
+- mean_sigm_crit_inv: value of the inverse mean critical density &lt;sigcrit**-1&gt; in Mpc**2.Msun**-1
+- fl: value of &lt;sigcrit**-2&gt; / (&lt;sigcrit**-1&gt;**2)</p>
+<p>Returns:
+- radplus: new set of extra/inter-polated radii values, including the values of “radii”
+- rmeanplus: central values of “radplus”
+- evalrad: indices of the “radii” points within “radplus”</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.modeling.get_shear">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.modeling.</span></span><span class="sig-name descname"><span class="pre">get_shear</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dsigma</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_sigm_crit_inv</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fl</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/modeling.html#get_shear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.modeling.get_shear" title="Link to this definition">¶</a></dt>
+<dd><p>computes the expected tangential shear profile using Seitz and Schneider 1997 (or Umestu 2020 equation 93)</p>
+<blockquote>
+<div><p>Args:
+- sigma: projected surface mass density
+- dsigma: Delta Sigma
+- mean_sigm_crit_inv: value of the inverse mean critical density &lt;sigcrit**-1&gt; in Mpc**2.Msun**-1
+- fl: value of &lt;sigcrit**-2&gt; / (&lt;sigcrit**-1&gt;**2)</p>
+<p>Returns:
+- mean tangential shear</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.modeling.rho_nfw_cr">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.modeling.</span></span><span class="sig-name descname"><span class="pre">rho_nfw_cr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pmod</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parnames</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">['cdelt',</span> <span class="pre">'rdelt']</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho_crit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/modeling.html#rho_nfw_cr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.modeling.rho_nfw_cr" title="Link to this definition">¶</a></dt>
+<dd><p>PyMC (Theano) function for the Navarro-Frenk-White (NFW) density profile (Navarro et al. 1996).</p>
+<p>Args:
+- radii: Array of radial distances in Mpc.
+- pmod: Parameter model, containing values for concentration and radius/mass in the order defined by parnames.
+- parnames: List defining the parameter names; possible values are [‘cdelt’, ‘rdelt’], [‘cdelt’, ‘mdelt’],</p>
+<blockquote>
+<div><p>[‘log10cdelt’, ‘log10mdelt’], [‘cdelt’, ‘log10mdelt’]. Default is [‘cdelt’, ‘rdelt’].</p>
+</div></blockquote>
+<ul class="simple">
+<li><p>delta: Chosen overdensity, default is 200.</p></li>
+<li><p>rho_crit: Critical density of the universe at the cluster’s redshift (required for mdelt to rdelt conversion).</p></li>
+</ul>
+<p>Returns:
+- NFW density profile divided by the critical density of the Universe (multiply by rho_crit to get physical density).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.modeling.rho_nfw_cr_np">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.modeling.</span></span><span class="sig-name descname"><span class="pre">rho_nfw_cr_np</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">radii</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r200</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">200.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/modeling.html#rho_nfw_cr_np"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.modeling.rho_nfw_cr_np" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.modeling.rho_to_sigma">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.modeling.</span></span><span class="sig-name descname"><span class="pre">rho_to_sigma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">radii_bins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/modeling.html#rho_to_sigma"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.modeling.rho_to_sigma" title="Link to this definition">¶</a></dt>
+<dd><p>Recovers the projected surface mass density by projecting a density profile</p>
+<blockquote>
+<div><p>Args:
+- radii_bins
+- rho: density profile</p>
+<p>Returns:
+- surface mass density in M_sun * Mpc**-2</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="wlclusters.modeling.rho_to_sigma_np">
+<span class="sig-prename descclassname"><span class="pre">wlclusters.modeling.</span></span><span class="sig-name descname"><span class="pre">rho_to_sigma_np</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">radii_bins</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rho</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/wlclusters/modeling.html#rho_to_sigma_np"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#wlclusters.modeling.rho_to_sigma_np" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">wlclusters</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<search id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</search>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2024, Loris Chappuis.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.4.7</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/wlclusters.modeling.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
