@@ -30,7 +30,8 @@ def rdelt_to_mdelt(r, z, cosmo, delta=200):
         float: The mass `m_delta` corresponding to the given radius `r_delta` at redshift `z` and overdensity `delta`.
     """
     rhoc = cosmo.critical_density(z).to(u.M_sun * u.kpc**-3).value
-    return (4/3) * np.pi * delta * rhoc * r**3
+    return (4 / 3) * np.pi * delta * rhoc * r**3
+
 
 def mdelt_to_rdelt(m, z, cosmo, delta=200):
     """
@@ -46,5 +47,4 @@ def mdelt_to_rdelt(m, z, cosmo, delta=200):
         float: The radius `r_delta` corresponding to the given mass `m_delta` at redshift `z` and overdensity `delta`.
     """
     rhoc = cosmo.critical_density(z).to(u.M_sun * u.kpc**-3).value
-    return (m / ((4/3) * np.pi * delta * rhoc))**(1/3)
-
+    return (m / ((4 / 3) * np.pi * delta * rhoc)) ** (1 / 3)

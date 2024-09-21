@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def compute_shape_noise_error(sources, mask, sigma_g=0.26, use_weights=False):
     """
     Compute the shape noise error for a given bin.
@@ -20,18 +21,19 @@ def compute_shape_noise_error(sources, mask, sigma_g=0.26, use_weights=False):
     galaxies_in_bin = sources[mask]
 
     if use_weights:
-        w = galaxies_in_bin['weight']
+        w = galaxies_in_bin["weight"]
     else:
         w = np.ones(len(galaxies_in_bin))  # If no weights, set weights to 1
 
     # Calculate shape noise variance per bin
-    numerator = np.sum(w ** 2 * sigma_g ** 2)
+    numerator = np.sum(w**2 * sigma_g**2)
     denominator = np.sum(w) ** 2
 
     shape_noise_variance = numerator / denominator
     shape_noise_error = np.sqrt(shape_noise_variance)
 
     return shape_noise_error
+
 
 def get_lss_cov(random_shear_profiles, n_bins):
     """
@@ -49,7 +51,7 @@ def get_lss_cov(random_shear_profiles, n_bins):
     # Extract the tangential shear profiles (gplus) from the random shear profiles
     gplus_profiles = []
     for i in range(len(random_shear_profiles) // n_bins):
-        gplus = random_shear_profiles['gplus'][i * n_bins: (i + 1) * n_bins]
+        gplus = random_shear_profiles["gplus"][i * n_bins : (i + 1) * n_bins]
         gplus_profiles.append(gplus)
 
     gplus_profiles = np.array(gplus_profiles)  # Shape: (n_random, n_bins)
@@ -64,9 +66,9 @@ def get_lss_cov(random_shear_profiles, n_bins):
     n_random = gplus_profiles.shape[0]
     for i in range(n_bins):
         for j in range(n_bins):
-            covariance_matrix[i, j] = (
-                    np.sum((gplus_profiles[:, i] - mean_gplus[i]) * (gplus_profiles[:, j] - mean_gplus[j])) / (
-                        n_random - 1)
-            )
+            covariance_matrix[i, j] = np.sum(
+                (gplus_profiles[:, i] - mean_gplus[i])
+                * (gplus_profiles[:, j] - mean_gplus[j])
+            ) / (n_random - 1)
 
     return covariance_matrix

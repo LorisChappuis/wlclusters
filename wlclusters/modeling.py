@@ -4,7 +4,7 @@ from .deproject import MyDeprojVol
 import pymc as pm
 
 
-def rho_nfw_cr(radii, pmod, delta=200.):
+def rho_nfw_cr(radii, pmod, delta=200.0):
     """
     Computes the Navarro-Frenk-White (NFW) density profile using PyMC (Theano) for a given radial distance array.
     Multiply the result by the critical density of the universe to get the physical density.
@@ -19,18 +19,22 @@ def rho_nfw_cr(radii, pmod, delta=200.):
     """
 
     # Calculate r as the midpoints of radii
-    r = (radii[1:] + radii[:-1]) / 2 * 1000.  # Convert radii to kpc
+    r = (radii[1:] + radii[:-1]) / 2 * 1000.0  # Convert radii to kpc
 
     cdelt, rdelt = pmod
 
     # Calculate delta_crit using PyMC math functions
-    delta_crit = (delta / 3) * (cdelt**3) * (pm.math.log(1. + cdelt) - cdelt / (1 + cdelt)) ** (-1)
+    delta_crit = (
+        (delta / 3)
+        * (cdelt**3)
+        * (pm.math.log(1.0 + cdelt) - cdelt / (1 + cdelt)) ** (-1)
+    )
 
     # Return NFW density profile
-    return delta_crit / ((cdelt * r / rdelt) * ((1. + (cdelt * r / rdelt)) ** 2))
+    return delta_crit / ((cdelt * r / rdelt) * ((1.0 + (cdelt * r / rdelt)) ** 2))
 
 
-def rho_nfw_cr_np(radii, c200, r200, delta=200.):
+def rho_nfw_cr_np(radii, c200, r200, delta=200.0):
     """
     Computes the Navarro-Frenk-White (NFW) density profile using NumPy for a given radial distance array.
     Multiply the result by the critical density of the universe to get the physical density.
@@ -44,13 +48,14 @@ def rho_nfw_cr_np(radii, c200, r200, delta=200.):
     Returns:
         array: NFW density profile divided by the critical density of the universe.
     """
-    r = (radii[1:] + radii[:-1]) / 2 * 1000.
-    delta_crit = (delta / 3) * (c200 ** 3) * (np.log(1. + c200) - c200 / (1 + c200)) ** (-1)
-    return delta_crit / ((c200 * r / r200) * ((1. + (c200 * r / r200)) ** 2))
+    r = (radii[1:] + radii[:-1]) / 2 * 1000.0
+    delta_crit = (
+        (delta / 3) * (c200**3) * (np.log(1.0 + c200) - c200 / (1 + c200)) ** (-1)
+    )
+    return delta_crit / ((c200 * r / r200) * ((1.0 + (c200 * r / r200)) ** 2))
 
 
 def rho_to_sigma(radii_bins, rho):
-
     """
     Projects a 3D density profile to compute the surface mass density using PyMC (Theano).
 
@@ -64,12 +69,12 @@ def rho_to_sigma(radii_bins, rho):
 
     deproj = MyDeprojVol(radii_bins[:-1], radii_bins[1:])
     proj_vol = deproj.deproj_vol().T
-    area_proj = np.pi * (-(radii_bins[:-1] * 1e6) ** 2 + (radii_bins[1:] * 1e6) ** 2)
+    area_proj = np.pi * (-((radii_bins[:-1] * 1e6) ** 2) + (radii_bins[1:] * 1e6) ** 2)
     sigma = pm.math.dot(proj_vol, rho) / area_proj
     return sigma * 1e12
 
-def rho_to_sigma_np(radii_bins, rho):
 
+def rho_to_sigma_np(radii_bins, rho):
     """
     Projects a 3D density profile to compute the surface mass density using NumPy.
 
@@ -83,7 +88,7 @@ def rho_to_sigma_np(radii_bins, rho):
 
     deproj = MyDeprojVol(radii_bins[:-1], radii_bins[1:])
     proj_vol = deproj.deproj_vol().T
-    area_proj = np.pi * (-(radii_bins[:-1] * 1e6) ** 2 + (radii_bins[1:] * 1e6) ** 2)
+    area_proj = np.pi * (-((radii_bins[:-1] * 1e6) ** 2) + (radii_bins[1:] * 1e6) ** 2)
     sigma = np.dot(proj_vol, rho) / area_proj
     return sigma * 1e12
 
@@ -117,9 +122,10 @@ def dsigma_trap(sigma, radii):
 
     arg = pm.math.stack(list_stack)
     a = pm.math.dot(m, arg)
-    sigmabar = (2 / (rmean ** 2)) * a
+    sigmabar = (2 / (rmean**2)) * a
     dsigma = sigmabar - sigma
     return dsigma
+
 
 def dsigma_trap_np(sigma, radii):
     """
@@ -145,7 +151,7 @@ def dsigma_trap_np(sigma, radii):
     arg = np.append(arg0, arg1)
 
     a = np.dot(m, arg)
-    sigmabar = (2 / (rmean ** 2)) * a
+    sigmabar = (2 / (rmean**2)) * a
     dsigma = sigmabar - sigma
     return dsigma
 
@@ -169,7 +175,6 @@ def get_shear(sigma, dsigma, mean_sigm_crit_inv, fl):
     return shear
 
 
-
 def get_radplus(radii, rmin=1e-3, rmax=1e2, nptplus=19):
     """
     Generates additional interpolated/extrapolated radii points for integration.
@@ -181,7 +186,7 @@ def get_radplus(radii, rmin=1e-3, rmax=1e2, nptplus=19):
         nptplus (int, optional): Number of additional points, defaults to 19.
 
     Returns:
-        tuple: 
+        tuple:
             - radplus (array): Extended radii array.
             - rmeanplus (array): Midpoint of extended radii.
             - evalrad (array): Indices of original radii within extended radii array.
@@ -189,15 +194,19 @@ def get_radplus(radii, rmin=1e-3, rmax=1e2, nptplus=19):
 
     if nptplus % 2 == 0:
         nptplus = nptplus + 1
-    rmean = (radii[1:] + radii[:-1]) / 2.
+    rmean = (radii[1:] + radii[:-1]) / 2.0
     radplus = np.logspace(np.log10(rmin), np.log10(radii[0]), nptplus)
     for i in range(len(radii) - 1):
         vplus = np.linspace(radii[i], radii[i + 1], nptplus + 1)
         radplus = np.append(radplus, vplus[1:])
-    radplus = np.append(radplus, np.logspace(np.log10(radplus[-1]), np.log10(rmax), 20)[1:])
-    rmeanplus = (radplus[1:] + radplus[:-1]) / 2.
+    radplus = np.append(
+        radplus, np.logspace(np.log10(radplus[-1]), np.log10(rmax), 20)[1:]
+    )
+    rmeanplus = (radplus[1:] + radplus[:-1]) / 2.0
     nsym = int(np.floor(nptplus / 2))
-    evalrad = (np.arange(nptplus + nsym - 1, nptplus + nsym + len(rmean) * nptplus, nptplus))[:len(rmean)]
+    evalrad = (
+        np.arange(nptplus + nsym - 1, nptplus + nsym + len(rmean) * nptplus, nptplus)
+    )[: len(rmean)]
     return radplus, rmeanplus, evalrad
 
 
@@ -227,7 +236,7 @@ def WLmodel(WLdata, pmod):
     ev : numpy.ndarray
         Indices of the input data radii points within the new radii array, `rm`.
     """
-    
+
     radplus, rm, ev = get_radplus(WLdata.radii_wl)
 
     rho_out = rho_nfw_cr(radplus, pmod) * WLdata.rho_crit
@@ -239,6 +248,7 @@ def WLmodel(WLdata, pmod):
     gplus = get_shear(sig, dsigma, WLdata.msigmacrit, WLdata.fl)
 
     return gplus, rm, ev
+
 
 def WLmodel_np(WLdata, pmod):
     """
@@ -272,7 +282,6 @@ def WLmodel_np(WLdata, pmod):
     dsigma = dsigma_trap_np(sig, radplus)
     gplus = get_shear(sig, dsigma, WLdata.msigmacrit, WLdata.fl)
     return gplus, rm, ev
-
 
 
 class WLData:
@@ -326,25 +335,37 @@ class WLData:
     __init__ :
         Initializes the WLData object and computes radial bin edges and other derived attributes.
     """
-    
-    def __init__(self, redshift, rin=None, rout=None, gplus=None, err_gplus=None,
-                 sigmacrit_inv=None, fl=None, cosmo=None, unit='proper'):
+
+    def __init__(
+        self,
+        redshift,
+        rin=None,
+        rout=None,
+        gplus=None,
+        err_gplus=None,
+        sigmacrit_inv=None,
+        fl=None,
+        cosmo=None,
+        unit="proper",
+    ):
 
         if rin is None or rout is None or gplus is None or err_gplus is None:
 
-            print('Missing input, please provide rin, rout, gplus, and err_gplus')
+            print("Missing input, please provide rin, rout, gplus, and err_gplus")
 
             return
 
         if sigmacrit_inv is None:
 
-            print('The mean value of sigma_crit is required')
+            print("The mean value of sigma_crit is required")
 
             return
 
         if fl is None:
 
-            print('The second order correction factor is not given, we will do the calculation at first order')
+            print(
+                "The second order correction factor is not given, we will do the calculation at first order"
+            )
 
         self.gplus = gplus
 
@@ -354,12 +375,12 @@ class WLData:
 
             from astropy.cosmology import Planck15 as cosmo
 
-        if unit == 'proper':
+        if unit == "proper":
             amin2kpc = cosmo.kpc_proper_per_arcmin(redshift).value
-        if unit == 'comoving':
+        if unit == "comoving":
             amin2kpc = cosmo.kpc_comoving_per_arcmin(redshift).value
 
-        self.rin_wl = rin * amin2kpc / 1e3 # Mpc
+        self.rin_wl = rin * amin2kpc / 1e3  # Mpc
 
         self.rout_wl = rout * amin2kpc / 1e3
 
@@ -369,7 +390,7 @@ class WLData:
 
         self.rout_wl_am = rout
 
-        self.rref_wl = (self.rin_wl + self.rout_wl) / 2.
+        self.rref_wl = (self.rin_wl + self.rout_wl) / 2.0
 
         self.rho_crit = (cosmo.critical_density(redshift).to(u.M_sun * u.Mpc**-3)).value
 
