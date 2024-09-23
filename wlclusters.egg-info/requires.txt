@@ -1,5 +1,0 @@
-numpy
-pymc
-astropy
-scipy
-tqdm
