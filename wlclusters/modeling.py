@@ -34,20 +34,20 @@ def rho_nfw_cr(radii, pmod, delta=200.0):
     return delta_crit / ((cdelt * r / rdelt) * ((1.0 + (cdelt * r / rdelt)) ** 2))
 
 
-def rho_nfw_cr_np(radii, c200, r200, delta=200.0):
+def rho_nfw_cr_np(radii, pmod, delta=200.0):
     """
     Computes the Navarro-Frenk-White (NFW) density profile using NumPy for a given radial distance array.
     Multiply the result by the critical density of the universe to get the physical density.
 
     Args:
         radii (array): Radial distances in Mpc.
-        c200 (float): Concentration parameter.
-        r200 (float): Radius parameter (in Mpc).
+        pmod (list): Parameters model, containing concentration and radius/mass.
         delta (float, optional): Overdensity parameter, defaults to 200.
 
     Returns:
         array: NFW density profile divided by the critical density of the universe.
     """
+    cdelt, rdelt = pmod
     r = (radii[1:] + radii[:-1]) / 2 * 1000.0
     delta_crit = (
         (delta / 3) * (c200**3) * (np.log(1.0 + c200) - c200 / (1 + c200)) ** (-1)
