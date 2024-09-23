@@ -8,5 +8,5 @@
 #docs/build/_static/
 #docs/build/.doctrees/
 
-docs/*
-!docs/*.html
+#docs/*
+#!docs/*.html
