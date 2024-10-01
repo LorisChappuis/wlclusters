@@ -50,9 +50,9 @@ def rho_nfw_cr_np(radii, pmod, delta=200.0):
     cdelt, rdelt = pmod
     r = (radii[1:] + radii[:-1]) / 2 * 1000.0
     delta_crit = (
-        (delta / 3) * (c200**3) * (np.log(1.0 + c200) - c200 / (1 + c200)) ** (-1)
+        (delta / 3) * (cdelt**3) * (np.log(1.0 + cdelt) - cdelt / (1 + cdelt)) ** (-1)
     )
-    return delta_crit / ((c200 * r / r200) * ((1.0 + (c200 * r / r200)) ** 2))
+    return delta_crit / ((cdelt * r / rdelt) * ((1.0 + (cdelt * r / rdelt)) ** 2))
 
 
 def rho_to_sigma(radii_bins, rho):

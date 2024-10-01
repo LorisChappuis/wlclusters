@@ -1,6 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 from .modeling import WLData, WLmodel_np
+from .utils import mdelt_to_rdelt
 import random
 
 
@@ -108,10 +109,17 @@ def wldata_from_ID(
 
             chains = all_chains[np.isin(all_chains["ID"], lens_id)]
 
+            if "log10mdelt" in chains.colnames and "log10cdelt" in chains.colnames:
+                chains["mdelt"] = 10 ** chains["log10mdelt"]
+                chains["cdelt"] = 10 ** chains["log10cdelt"]
+
+            if "mdelt" in chains.colnames:
+                chains['rdelt'] = mdelt_to_rdelt(chains['mdelt'], z_cl, cosmo, delta=200)
+
             # Sample 500 rows randomly from the chains for computational efficiency
-            sampled_indices = random.sample(range(len(chains[0][1])), 500)
+            sampled_indices = random.sample(range(len(chains['cdelt'][0])), 500)
             pmod = np.array(
-                (chains[0][1][sampled_indices], chains[0][2][sampled_indices])
+                (chains['cdelt'][0][sampled_indices], chains['rdelt'][0][sampled_indices])
             ).T
             gplus_results = []
 
