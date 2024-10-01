@@ -40,8 +40,10 @@ def compute_tangential_shear_profile(
     x, y = sources["RA"] - center[0], sources["Dec"] - center[1]
     theta = np.sqrt(x**2 + y**2)
     phi = np.arctan2(y, x)
-    g1 = sources["e_1"]
-    g2 = -sources["e_2"]
+
+    # Initial raw ellipticity values
+    e1 = sources["e_1"]
+    e2 = -sources["e_2"]
 
     # Check for optional columns
     use_response = "e_rms" in sources.columns
@@ -62,10 +64,9 @@ def compute_tangential_shear_profile(
     if use_additive_bias:
         c1 = sources["c_1_bias"]
         c2 = sources["c_2_bias"]
-        g1 = g1 - c1
-        g2 = g2 - c2
-
-    gamma_plus = -g1 * np.cos(2 * phi) - g2 * np.sin(2 * phi)
+    else:
+        c1 = np.zeros(len(sources))
+        c2 = np.zeros(len(sources))
 
     if unit == "proper":
         kpcp = cosmo.kpc_proper_per_arcmin(z_cl).value
@@ -92,8 +93,15 @@ def compute_tangential_shear_profile(
             else:
                 R_i = 0.5  # Assume 2*R=1 if not provided
 
-            # Compute weighted shear including multiplicative bias and responsivity
-            weighted_shear = w[mask] * gamma_plus[mask] / (2 * R_i * (1 + m[mask]))
+            # Correct for the multiplicative bias and responsivity
+            g1_corrected = (e1[mask] / (2 * R_i)) - c1[mask]
+            g2_corrected = (e2[mask] / (2 * R_i)) - c2[mask]
+
+            # Compute the tangential shear component
+            gamma_plus = -g1_corrected * np.cos(2 * phi[mask]) - g2_corrected * np.sin(2 * phi[mask])
+
+            # Compute weighted shear
+            weighted_shear = w[mask] * gamma_plus / (1 + m[mask])
             signal[i] = np.sum(weighted_shear) / np.sum(w[mask])
 
             # Compute the shape noise for this bin
@@ -105,6 +113,7 @@ def compute_tangential_shear_profile(
             errors[i] = 0
 
     return bin_edges_deg, bin_mean, signal, errors
+
 
 
 def return_sigmacrit(sources, center, z_cl, bin_edges, dz, cosmo, unit="proper"):
@@ -178,8 +187,9 @@ def shear_extraction(
     cosmo,
     unit="proper",
     sources_denoised=None,
+    sigma_g = 0.26,
     lss=False,
-    security_distance=1000,
+    security_distance=0,
 ):
     """
     Iterates the shear extraction over all clusters in the given catalog.
@@ -233,7 +243,7 @@ def shear_extraction(
 
         # Compute the tangential shear profile
         bin_edges_deg, bin_mean, signal, errors = compute_tangential_shear_profile(
-            sources, clust_center, clust_z, bin_edges, dz=0.1, cosmo=cosmo, unit=unit
+            sources, clust_center, clust_z, bin_edges, sigma_g=sigma_g, dz=0.1, cosmo=cosmo, unit=unit
         )
 
         # Compute the mean inverse critical density and fl
@@ -308,7 +318,7 @@ def extract_random_shear_profiles(
     Returns:
         random_shear_profiles: Astropy Table with random shear profiles.
     """
-
+    
     random_profiles = []
 
     # Convert security distance to degrees
@@ -330,12 +340,12 @@ def extract_random_shear_profiles(
         while not valid_point_found:
             # Generate a random point within the survey area
             rand_ra = np.random.uniform(
-                np.min(sources["RA"] + security_distance_deg),
-                np.max(sources["RA"]) - security_distance_deg,
+                np.min(sources["RA"] + edge_distance),
+                np.max(sources["RA"]) - edge_distance,
             )
             rand_dec = np.random.uniform(
-                np.min(sources["Dec"] + security_distance_deg),
-                np.max(sources["Dec"]) - security_distance_deg,
+                np.min(sources["Dec"] + edge_distance),
+                np.max(sources["Dec"]) - edge_distance,
             )
             random_point = SkyCoord(ra=rand_ra * u.deg, dec=rand_dec * u.deg)
 
@@ -346,7 +356,7 @@ def extract_random_shear_profiles(
 
         # Compute shear profile at the valid random point
         bin_edges_deg, bin_mean, signal, errors = compute_tangential_shear_profile(
-            sources, [rand_ra, rand_dec], z_cl, bin_edges, dz=dz, cosmo=cosmo, unit=unit
+            sources, [rand_ra, rand_dec], z_cl, bin_edges, sigma_g=0, dz=dz, cosmo=cosmo, unit=unit
         )
         msci, fl = return_sigmacrit(
             sources, [rand_ra, rand_dec], z_cl, bin_edges, dz=dz, cosmo=cosmo, unit=unit
@@ -383,9 +393,8 @@ def get_lss_cov_for_z(
     unit="proper",
     security_distance=0.0,
 ):
-    # Use denoised sources for LSS covariance matrix computation
     """
-    Computes the covariance matrices for each redshift of a given arrat of redshifts.
+    Computes the covariance matrices for each redshift of a given array of redshifts.
 
     Args:
         z_arr (array-like): Array containing the redshift values for which the covariance has to be estimated.
