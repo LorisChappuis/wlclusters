@@ -94,14 +94,14 @@ def compute_tangential_shear_profile(
             else:
                 R_i = 0.5  # Assume 2*R=1 if not provided
 
-            # Correct for the multiplicative bias and responsivity
+            # Correct for the additive bias and responsivity
             g1_corrected = (e1[mask] / (2 * R_i)) - c1[mask]
             g2_corrected = (e2[mask] / (2 * R_i)) - c2[mask]
 
             # Compute the tangential shear component
             gamma_plus = -g1_corrected * np.cos(2 * phi[mask]) - g2_corrected * np.sin(2 * phi[mask])
 
-            # Compute weighted shear
+            # Compute weighted shear and correct for multiplicative bias
             weighted_shear = w[mask] * gamma_plus / (1 + m[mask])
             signal[i] = np.sum(weighted_shear) / np.sum(w[mask])
 
