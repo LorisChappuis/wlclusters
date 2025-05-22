@@ -40,7 +40,7 @@ def select_covariance(covtype, input_covmat, clust_id, clust_z, cluster_profiles
         return np.diag(np.square(cluster_profiles["errors"]))
 
 
-def setup_parameters(parnames, cosmo, clust_z):
+def setup_parameters(parnames, cosmo, clust_z, delta=200):
     """
     Sets up the parameters for the NFW profile model based on the chosen parameterization by converting the user choice into cdelt and rdelt.
 
@@ -59,20 +59,20 @@ def setup_parameters(parnames, cosmo, clust_z):
     elif parnames == ["cdelt", "mdelt"]:
         cdelt = pm.Uniform(name="cdelt", lower=1.0, upper=10.0)
         mdelt = pm.Uniform(name="mdelt", lower=1e12, upper=1e16)
-        rdelt = pm.Deterministic("rdelt", mdelt_to_rdelt(mdelt, clust_z, cosmo))
+        rdelt = pm.Deterministic("rdelt", mdelt_to_rdelt(mdelt, clust_z, cosmo, delta))
         pmod = [cdelt, rdelt]
     elif parnames == ["log10cdelt", "log10mdelt"]:
         log10cdelt = pm.Uniform(name="log10cdelt", lower=0.0, upper=1.0)
         log10mdelt = pm.Uniform(name="log10mdelt", lower=12.0, upper=16.0)
         cdelt = pm.Deterministic("cdelt", 10**log10cdelt)
         mdelt = pm.Deterministic("mdelt", 10**log10mdelt)
-        rdelt = pm.Deterministic("rdelt", mdelt_to_rdelt(mdelt, clust_z, cosmo))
+        rdelt = pm.Deterministic("rdelt", mdelt_to_rdelt(mdelt, clust_z, cosmo, delta))
         pmod = [cdelt, rdelt]
     elif parnames == ["cdelt", "log10mdelt"]:
         cdelt = pm.Uniform(name="cdelt", lower=1.0, upper=10.0)
         log10mdelt = pm.Uniform(name="log10mdelt", lower=12.0, upper=16.0)
         mdelt = pm.Deterministic("mdelt", 10**log10mdelt)
-        rdelt = pm.Deterministic("rdelt", mdelt_to_rdelt(mdelt, clust_z, cosmo))
+        rdelt = pm.Deterministic("rdelt", mdelt_to_rdelt(mdelt, clust_z, cosmo, delta))
         pmod = [cdelt, rdelt]
     else:
         raise ValueError("Invalid parnames specified.")
@@ -95,7 +95,7 @@ def forward_model(wldata, parnames, cosmo, clust_z, cov_mat, ndraws, ntune, delt
     """
     with pm.Model() as model:
         # Setup parameters inside the model context
-        pmod = setup_parameters(parnames, cosmo, clust_z)
+        pmod = setup_parameters(parnames, cosmo, clust_z, delta)
 
         # Build the weak lensing model
         gmodel, rm, ev = WLmodel(wldata, pmod, delta=delta)
