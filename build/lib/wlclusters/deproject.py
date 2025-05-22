@@ -31,15 +31,15 @@ class MyDeprojVol:
         Calculate the deprojected volume matrix for spherical shells.
 
         This method performs a deprojection of volumes for the given inner (`radin`)
-        and outer (`radot`) radii. It adjusts for discrepancies between adjacent radii 
+        and outer (`radot`) radii. It adjusts for discrepancies between adjacent radii
         and ensures consistent volume calculations for each shell.
 
         Returns:
-            numpy.ndarray: A matrix where each element [i, j] represents the deprojected 
+            numpy.ndarray: A matrix where each element [i, j] represents the deprojected
             volume of the j-th shell inside the i-th ring.
 
         Notes:
-            - The method first checks for discrepancies between adjacent radii and fixes 
+            - The method first checks for discrepancies between adjacent radii and fixes
               them if necessary.
             - A warning is printed if the discrepancies exceed a 0.1% threshold.
             - The volume matrix is then computed using the provided inner and outer radii.

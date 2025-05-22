@@ -79,7 +79,7 @@ def setup_parameters(parnames, cosmo, clust_z):
     return pmod
 
 
-def forward_model(wldata, parnames, cosmo, clust_z, cov_mat, ndraws, ntune):
+def forward_model(wldata, parnames, cosmo, clust_z, cov_mat, ndraws, ntune, delta=200):
     """
     Performs forward modeling of weak lensing data using a specified NFW profile and PyMC.
 
@@ -98,7 +98,7 @@ def forward_model(wldata, parnames, cosmo, clust_z, cov_mat, ndraws, ntune):
         pmod = setup_parameters(parnames, cosmo, clust_z)
 
         # Build the weak lensing model
-        gmodel, rm, ev = WLmodel(wldata, pmod)
+        gmodel, rm, ev = WLmodel(wldata, pmod, delta=delta)
         g_obs = pm.MvNormal("WL", mu=gmodel[ev], observed=wldata.gplus, cov=cov_mat)
 
         # Sample the posterior
@@ -248,6 +248,7 @@ def run(
     ndraws=2000,
     ntune=1000,
     parnames=["cdelt", "rdelt"],
+    delta=200,
 ):
     """
     Executes the full weak lensing modeling pipeline for a catalog of clusters.
@@ -297,10 +298,11 @@ def run(
             fl=fl,
             cosmo=cosmo,
             unit=unit,
+            delta=delta,
         )
 
         # Call forward_model with all arguments
-        trace = forward_model(wldata, parnames, cosmo, clust_z, cov_mat, ndraws, ntune)
+        trace = forward_model(wldata, parnames, cosmo, clust_z, cov_mat, ndraws, ntune, delta=delta)
 
         all_c200_chains.append(np.array(trace.posterior[parnames[0]]).flatten())
         all_r200_chains.append(np.array(trace.posterior[parnames[1]]).flatten())

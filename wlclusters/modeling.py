@@ -210,7 +210,7 @@ def get_radplus(radii, rmin=1e-3, rmax=1e2, nptplus=19):
     return radplus, rmeanplus, evalrad
 
 
-def WLmodel(WLdata, pmod):
+def WLmodel(WLdata, pmod, delta=200.0):
     """
     PyMC (Theano) model for predicting the mean tangential shear profile for a given density profile at a specified redshift.
 
@@ -239,7 +239,7 @@ def WLmodel(WLdata, pmod):
 
     radplus, rm, ev = get_radplus(WLdata.radii_wl)
 
-    rho_out = rho_nfw_cr(radplus, pmod) * WLdata.rho_crit
+    rho_out = rho_nfw_cr(radplus, pmod, delta) * WLdata.rho_crit
 
     sig = rho_to_sigma(radplus, rho_out)
 
@@ -250,7 +250,7 @@ def WLmodel(WLdata, pmod):
     return gplus, rm, ev
 
 
-def WLmodel_np(WLdata, pmod):
+def WLmodel_np(WLdata, pmod, delta=200.0):
     """
     Numpy model for predicting the mean tangential shear profile for a given density profile at a specified redshift.
 
@@ -277,7 +277,7 @@ def WLmodel_np(WLdata, pmod):
         Indices of the input data radii points within the new radii array, `rm`.
     """
     radplus, rm, ev = get_radplus(WLdata.radii_wl)
-    rho_out = rho_nfw_cr_np(radplus, pmod) * WLdata.rho_crit
+    rho_out = rho_nfw_cr_np(radplus, pmod, delta=delta) * WLdata.rho_crit
     sig = rho_to_sigma_np(radplus, rho_out)
     dsigma = dsigma_trap_np(sig, radplus)
     gplus = get_shear(sig, dsigma, WLdata.msigmacrit, WLdata.fl)
@@ -347,6 +347,7 @@ class WLData:
         fl=None,
         cosmo=None,
         unit="proper",
+        delta=200.0,
     ):
 
         if rin is None or rout is None or gplus is None or err_gplus is None:
@@ -397,3 +398,5 @@ class WLData:
         self.msigmacrit = sigmacrit_inv
 
         self.fl = fl
+
+        self.delta = delta

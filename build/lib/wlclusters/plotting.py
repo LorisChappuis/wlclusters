@@ -14,6 +14,7 @@ def wldata_from_ID(
     return_shear=False,
     return_shear_model="envelope",
     cosmo=None,
+    delta=200
 ):
     """
     Initialize a WLData class for an individual cluster, optionally computing shear profiles.
@@ -87,6 +88,7 @@ def wldata_from_ID(
         sigmacrit_inv=msci,
         fl=fl,
         cosmo=cosmo,
+        delta=delta
     )
 
     # Check if shear profiles should be returned
@@ -96,7 +98,7 @@ def wldata_from_ID(
 
             pmod_med = [results_id["c200_med"], results_id["r200_med"]]
             # Compute shear profile
-            gplus_med, rm, ev = WLmodel_np(wldata, pmod_med)
+            gplus_med, rm, ev = WLmodel_np(wldata, pmod_med, delta=delta)
             # Mask to cut the radial extrapolation
             mask = (rm >= min(wldata.rin_wl)) & (rm <= max(wldata.rout_wl))
             return wldata, gplus_med[mask], rm[mask]
@@ -114,7 +116,7 @@ def wldata_from_ID(
                 chains["cdelt"] = 10 ** chains["log10cdelt"]
 
             if "mdelt" in chains.colnames:
-                chains['rdelt'] = mdelt_to_rdelt(chains['mdelt'], z_cl, cosmo, delta=200)
+                chains['rdelt'] = mdelt_to_rdelt(chains['mdelt'], z_cl, cosmo, delta=delta)
 
             # Sample 500 rows randomly from the chains for computational efficiency
             sampled_indices = random.sample(range(len(chains['cdelt'][0])), 500)
@@ -125,7 +127,7 @@ def wldata_from_ID(
 
             # Loop through the sampled chain rows to compute shear profile
             for i in tqdm(range(len(sampled_indices))):
-                gplus, rm, ev = WLmodel_np(wldata, pmod[i])
+                gplus, rm, ev = WLmodel_np(wldata, pmod[i], delta=delta)
                 # Mask to cut the radial extrapolation
                 mask = (rm >= min(wldata.rin_wl)) & (rm <= max(wldata.rout_wl))
                 gplus_results.append(gplus[mask])
