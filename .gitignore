@@ -1,12 +1,35 @@
-#docs/build/*
-#!docs/build/**/*.html
+# Sphinx build directory
+docs/_build/
 
-# Ignore specific directories you don't want to track
-#docs/build/source/
-#docs/build/_modules/
-#docs/build/_sources/
-#docs/build/_static/
-#docs/build/.doctrees/
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-#docs/*
-#!docs/*.html
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
